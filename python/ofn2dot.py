@@ -1,79 +1,119 @@
-from rdflib import Graph, RDF, RDFS, OWL, XSD
-from graphviz import Digraph
 import os
+import re
+from rdflib import Graph, RDF, RDFS, OWL, XSD, URIRef
+from graphviz import Digraph
+from collections.abc import Mapping
 from funowl.converters.functional_converter import to_python
 from collections import defaultdict
-from rdflib import URIRef, Literal, XSD, Namespace
-# import logging
 
-# Set up logging
-# logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-# logger = logging.getLogger(__name__)
+def get_prefix_named_pairs(ontology_doc):
+    """Return [{'prefix': <str>, 'uri': <str>}, ...] from funowl PrefixDeclarations,
+    handling different return shapes of as_prefixes() across funowl versions."""
+    pd = getattr(ontology_doc, "prefixDeclarations", None)
+    if not pd:
+        return []
 
-# Namespaces
-ns = "https://isotc204.org/25965/transport/transportnetwork#"
-protege_ns = Namespace("http://protege.stanford.edu/ontologies/metadata#")
-rdf_ns = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-owl_ns = Namespace("http://www.w3.org/2002/07/owl#")
-dcterms_ns = Namespace("http://purl.org/dc/terms/")
+    ap = pd.as_prefixes()  # may be mapping-like, a view, or a list of objects/tuples
 
+    # Case 1: mapping-like (has .items())
+    if hasattr(ap, "items"):
+        return [{"prefix": str(k), "uri": str(v)} for k, v in ap.items()]
+
+    # Case 2: iterable (list/tuple) of pairs or objects
+    out = []
+    out.append({"prefix": "", "uri": ns})
+    for item in ap:
+        if isinstance(item, tuple) and len(item) == 2:
+            k, v = item
+            out.append({"prefix": str(k), "uri": str(v)})
+            print("      ", k, v)
+            continue
+
+        # funowl Prefix object variants
+        p = (
+            getattr(item, "prefixName", None)
+            or getattr(item, "prefix", None)
+            or getattr(item, "name", None)
+        )
+        iri = (
+            getattr(item, "fullIRI", None)
+            or getattr(item, "iri", None)
+            or getattr(item, "iriRef", None)
+        )
+        if p is not None and iri is not None:
+            out.append({"prefix": str(p), "uri": str(iri)})
+    return out
+
+def _norm_base(u: str) -> str:
+    return u.rstrip('/#')
+
+# Determine paths relative to the script location
+script_dir = os.path.dirname(__file__)
+ofn_path = os.path.join(script_dir, "..", "docs", "metr.ofn")
+diagrams_dir = os.path.join(script_dir, "..", "docs", "diagrams")
+
+# Check if OFN file exists
+if not os.path.exists(ofn_path):
+    raise FileNotFoundError(f"OFN file not found at {ofn_path}")
 
 # Ensure output directory exists
-os.makedirs("diagrams", exist_ok=True)
+os.makedirs(diagrams_dir, exist_ok=True)
 
 # Load OFN ontology and convert to RDF graph
-ont_doc = to_python("transportnetwork.ofn")
-g = Graph()
-ont_doc.to_rdf(g)
+try:
+    ont_doc = to_python(ofn_path)
+    g = Graph()
+    ont_doc.to_rdf(g)
+    print(f"Loaded ontology with {len(g)} triples")
+    if len(g) == 0:
+        raise ValueError("RDF graph is empty after loading ontology")
+except Exception as e:
+    raise RuntimeError(f"Failed to load or parse ontology from {ofn_path}: {str(e)}")
 
-# Namespaces
-ns = "https://isotc204.org/25965/transport/transportnetwork#"
-skos_ns = "http://www.w3.org/2004/02/skos/core#"
+# Dynamically set default namespace from ontology IRI
+try:
+    ns = str(ont_doc.ontology.iri) if ont_doc.ontology and ont_doc.ontology.iri else None
+except AttributeError:
+    ns = None
+if not ns:
+    print("Warning: No ontology IRI found in OFN file; using fallback namespace")
+    ns = "https://isotc204.org/ontologies/ofn/transport/metr"
+print(f"Using default namespace: {ns}")
 
-# Custom prefixes
-prefixes = {
-    "https://isotc204.org/25965/transport/transportnetwork#": "",
-    "https://www.opengis.net/ont/geosparql#": "geo:",
-    "https://www.w3.org/2006/time#": "time:",
-    "https://standards.iso.org/iso-iec/5087/-2/ed-1/en/ontology/code#": "code:",
-    "https://standards.iso.org/iso-iec/5087/-1/ed-1/en/ontology/GenericProperties#": "genProp:",
-    "https://standards.iso.org/iso-iec/5087/-1/ed-1/en/ontology/Mereology#": "partwhole:",
-    "https://standards.iso.org/iso-iec/5087/-2/ed-1/en/ontology/transinfras#": "transinfras:",
-    "https://isotc204.org/25965/transport/travelcorridor#": "travelcorridor:",
-    "http://www.w3.org/2004/02/skos/core#": "skos:",
-    "http://www.w3.org/2001/XMLSchema#": "xsd:",
-    "https://standards.iso.org/iso-iec/5087/-2/ed-1/en/ontology/activity#": "activity:",
-    "https://standards.iso.org/iso-iec/5087/-1/ed-1/en/ontology/CityUnits#": "cityunits:",
-}
+# Extract prefixes
+prefixes = get_prefix_named_pairs(ont_doc)
+print("Prefixes:")
+for d in prefixes:
+    print(f"  {d['prefix']} → {d['uri']}")
+# Build the map used by get_qname
+prefix_map = {_norm_base(d["uri"]): f"{d['prefix']}:" for d in prefixes}
 
 def get_qname(uri):
-    str_uri = str(uri)
-    # Normalize URI by removing trailing slash for matching
-    normalized_uri = str_uri.rstrip('/')
-    for base, pref in prefixes.items():
-        # Normalize base URI for comparison
-        normalized_base = base.rstrip('/')
-        if normalized_uri.startswith(normalized_base):
-            local_name = normalized_uri[len(normalized_base):]
-            # Ensure local name doesn't start with a slash
-            if local_name.startswith('/'):
-                local_name = local_name[1:]
-            return pref + local_name
-    # Debug: Log URIs that don't match any prefix
-    print(f"Warning: No prefix found for URI: {str_uri}")
-    return str_uri
+    s = str(uri)
+    norm = _norm_base(s)
+    for base in sorted(prefix_map.keys(), key=len, reverse=True):
+        if norm == base or norm.startswith(base + '/') or norm.startswith(base + '#'):
+            local = s[len(base):]
+            if local.startswith(('/', '#', '_')):
+                local = local[1:]
+            local = local.rstrip()
+            if prefix_map[base] == ":":
+                return local
+            return prefix_map[base] + local
+    print(f"Warning: No prefix found for URI: {s}")
+    return s
 
 def is_abstract(cls, g):
-    """Check if the class has protege:abstract annotation set to true."""
-    abstract = g.value(cls, protege_ns.abstract)
+    abstract = g.value(cls, URIRef(ns + "abstract"))
+    if abstract is None:
+        abstract = g.value(cls, URIRef("http://protege.stanford.edu/ontologies/metadata#abstract"))
     return abstract is not None and str(abstract).lower() == "true"
 
 def get_id(qname):
     if ':' in qname:
         prefix, local = qname.split(':', 1)
         return prefix + '_' + local
-    else:
-        return qname
+    return qname
 
 def get_all_class_superclasses(cls, g):
     direct_supers = set()
@@ -87,58 +127,43 @@ def get_all_class_superclasses(cls, g):
 
 # Extract classes
 classes = set(g.subjects(RDF.type, OWL.Class)) - {OWL.Thing}
+print(f"Found {len(classes)} classes in ontology")
+if not classes:
+    print("No classes found with RDF.type OWL.Class")
+else:
+    print("Classes found:")
+    for cls in classes:
+        print("   " + str(cls))
+
+# Filter classes by namespace
+local_classes = [cls for cls in classes if str(cls).startswith(ns)]
+print(f"Filtered to {len(local_classes)} local classes in namespace {ns}")
+if local_classes:
+    print("Local classes:")
+    for cls in local_classes:
+        print("   " + get_qname(cls))
 
 processed_count = 0
 errors = []
-# Build abstract_map: keys are class names, values are is_abstract(cls, g)
 abstract_map = {}
 
-for cls in classes:
-    cls_str = str(cls)
-    if cls_str.startswith(ns):
-        cls_name = get_qname(cls)
-        abstract_map[cls_name] = is_abstract(cls, g)
-        # logger.debug(f"Added {cls_name} to map with abstract status: {abstract_map[cls_name]}")
-    else:
-        continue  # Skip non-local classes
+for cls in local_classes:
+    cls_name = get_qname(cls)
+    abstract_map[cls_name] = is_abstract(cls, g)
 
-for name, is_abs in abstract_map.items():
-    print(f"{name}: {is_abs}")
+#for name, is_abs in abstract_map.items():
+#    print(f"{name}: abstract={is_abs}")
 
-# Helper function for formatting class titles
 def fmt_title(name: str) -> str:
-    """Return HTML-like label for a class name: bold; italic if abstract."""
     return f"<B><I>{name}</I></B>" if abstract_map.get(name, False) else f"<B>{name}</B>"
 
-# --- New helper and constant for skipping ITSPatternThing and its subclasses ---
-from rdflib import URIRef
-
-PATTERN_CLS = URIRef(ns + "ITSPatternThing")
-def is_descendant_of(cls_uri, ancestor_uri, g):
-    """Return True if cls_uri == ancestor_uri or cls_uri is a (transitive) subclass of ancestor_uri."""
-    if cls_uri == ancestor_uri:
-        return True
-    # Reuse existing superclass traversal
-    try:
-        return ancestor_uri in get_all_class_superclasses(cls_uri, g)
-    except RecursionError:
-        return False
-
-for cls in classes:    # Extract class name
-    cls_str = str(cls)
-    if cls_str.startswith(ns):
-        # Skip ITSPatternThing and any of its subclasses from output generation
-        if is_descendant_of(cls, PATTERN_CLS, g):
-            continue
-        cls_name = get_qname(cls)
-        cls_id = get_id(cls_name)
-    else:
-        continue  # Skip non-local classes
+# Removed ITSPatternThing filtering, as it's not in metr.ofn
+for cls in local_classes:
+    cls_name = get_qname(cls)
+    cls_id = get_id(cls_name)
+    print(f"Processing class: {cls_name}")
 
     try:
-        print(f"Processing class: {cls_name}")
-
-        # Initialize Graphviz diagram
         dot = Digraph(
             comment=f"Diagram for {cls_name}",
             format="svg",
@@ -147,9 +172,7 @@ for cls in classes:    # Extract class name
             edge_attr={"fontsize": "10", "fontname": "Arial"}
         )
 
-        # 1. Define graph, node, edge, rankdir items (already set in Digraph with rankdir=TB)
-
-        # 2. Define super classes
+        # Define superclasses
         superclasses = set()
         for super_cls in g.objects(cls, RDFS.subClassOf):
             if (super_cls, RDF.type, OWL.Class) in g or str(super_cls).startswith(ns):
@@ -157,11 +180,10 @@ for cls in classes:    # Extract class name
         for sup in sorted(superclasses):
             sup_id = get_id(sup)
             dot.node(sup_id, label=f'<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1"><TR><TD BGCOLOR="lightgray" ALIGN="CENTER">{fmt_title(sup)}</TD></TR></TABLE>>', margin="0")
-            
-        # 3. Define the main class in its own group with a rank=max statement
+
+        # Define main class
         with dot.subgraph() as main_group:
             main_group.attr(rank='max')
-            # Collect data properties
             data_props = defaultdict(list)
             for restriction in g.objects(cls, RDFS.subClassOf):
                 if (restriction, RDF.type, OWL.Restriction) in g:
@@ -183,16 +205,11 @@ for cls in classes:    # Extract class name
                             restrictions.append(f"max {max_qualified_card}")
                         if all_values_from:
                             restrictions.append("only")
-                        if restrictions:
-                            restriction_str = f"«{', '.join(restrictions)}»"
-                        else:
-                            restriction_str = ""
+                        restriction_str = f"«{', '.join(restrictions)}»" if restrictions else ""
                         data_props[prop_name].append((restriction_str, range_name))
 
-            # Combine restrictions for each property
             attributes = []
             for prop_name, restrictions in sorted(data_props.items()):
-                # Combine all restrictions for this property
                 all_restrictions = []
                 range_names = set()
                 for restriction_str, range_name in restrictions:
@@ -210,9 +227,8 @@ for cls in classes:    # Extract class name
             main_label = f'<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1"><TR><TD BGCOLOR="lightgray" ALIGN="CENTER" PORT="e">{fmt_title(cls_name)}</TD></TR>{attributes_html}</TABLE>>'
             main_group.node(cls_id, main_label, margin="0")
 
-        # 4. Define subgraph containing all of the associated classes with an invisible box
+        # Define associated classes
         associated_classes = set()
-        # Collect associated classes from object property restrictions
         for restriction in g.objects(cls, RDFS.subClassOf):
             if (restriction, RDF.type, OWL.Restriction) in g:
                 prop = g.value(restriction, OWL.onProperty)
@@ -246,25 +262,22 @@ for cls in classes:    # Extract class name
 
         with dot.subgraph(name='cluster_associated') as associated_cluster:
             associated_cluster.attr(style='invis', label='')
-
-            # 5. Include an Invis class as the first item in this group
             associated_cluster.node('Invis', label='<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1"><TR><TD></TD></TR></TABLE>>', style='invis', margin="0")
-
-            # 6. Add associated classes
             for assoc in sorted(associated_classes):
                 assoc_id = get_id(assoc)
                 associated_cluster.node(assoc_id, label=f'<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1"><TR><TD BGCOLOR="lightgray" ALIGN="CENTER">{fmt_title(assoc)}</TD></TR></TABLE>>', margin="0")
-                
-        # 7. Define the generalization relationships
+
+        # Define generalization relationships
         for sup in sorted(superclasses):
             sup_id = get_id(sup)
             dot.edge(cls_id, sup_id, arrowhead="onormal", style="solid")
 
-        # 8. Define the association to the Invis class (invisible)
+        # Define invisible association
         dot.edge(cls_id, 'Invis', style="invis")
 
-        # 9. Define all other associations per the OFN file
+        # Define object property associations
         combined = defaultdict(dict)
+#        print(f"Processing object property restrictions for {cls_name}:")
         for restriction in g.objects(cls, RDFS.subClassOf):
             if (restriction, RDF.type, OWL.Restriction) in g:
                 prop = g.value(restriction, OWL.onProperty)
@@ -279,7 +292,6 @@ for cls in classes:    # Extract class name
                         for sup in get_all_class_superclasses(cls, g)
                     )
                     style = "dashed" if is_inherited else "solid"
-
                     target_id = None
                     label_part = None
                     is_union = False
@@ -287,7 +299,6 @@ for cls in classes:    # Extract class name
                     reflexive = False
                     target_qname = None
 
-                    # Handle cardinalities
                     qualified_card = g.value(restriction, OWL.qualifiedCardinality)
                     min_qualified_card = g.value(restriction, OWL.minQualifiedCardinality)
                     max_qualified_card = g.value(restriction, OWL.maxQualifiedCardinality)
@@ -301,8 +312,9 @@ for cls in classes:    # Extract class name
                             label_part = f"min {min_qualified_card}"
                         elif max_qualified_card:
                             label_part = f"max {max_qualified_card}"
+                        reflexive = target_qname == cls_name
+#                        print(f"  - Property: {prop_name}, Target: {target_qname}, Cardinality: {label_part}, Reflexive: {reflexive}")
 
-                    # Handle universal (allValuesFrom -> only)
                     all_values_from = g.value(restriction, OWL.allValuesFrom)
                     if all_values_from:
                         target = all_values_from
@@ -323,73 +335,70 @@ for cls in classes:    # Extract class name
                                 union_members = members
                         else:
                             target_qname = get_qname(target)
-                            if target_qname != cls_name:
-                                target_id = get_id(target_qname)
-                            else:
-                                reflexive = True
-                                target_id = cls_id
+                            target_id = get_id(target_qname)
+                            reflexive = target_qname == cls_name
                         label_part = "only"
+#                        print(f"  - Property: {prop_name}, Target: {target_qname}, Restriction: only, Reflexive: {reflexive}")
 
-                    # Handle existential (someValuesFrom)
                     some_values_from = g.value(restriction, OWL.someValuesFrom)
                     if some_values_from:
                         target = some_values_from
                         target_qname = get_qname(target)
-                        if target_qname != cls_name:
-                            target_id = get_id(target_qname)
-                        else:
-                            reflexive = True
-                            target_id = cls_id
+                        target_id = get_id(target_qname)
+                        reflexive = target_qname == cls_name
                         label_part = "some"
+#                        print(f"  - Property: {prop_name}, Target: {target_qname}, Restriction: some, Reflexive: {reflexive}")
 
-                    if target_id is not None and label_part is not None:
+                    if target_id and label_part:
                         key = (prop_name, target_id)
-                        if 'label_parts' not in combined[key]:
-                            combined[key]['label_parts'] = []
+                        if key not in combined:
+                            combined[key] = {
+                                'label_parts': [],
+                                'style': style,
+                                'prop_name': prop_name,
+                                'target_id': target_id,
+                                'is_union': is_union,
+                                'union_members': union_members,
+                                'reflexive': reflexive,
+                                'target_qname': target_qname
+                            }
                         combined[key]['label_parts'].append(label_part)
-                        combined[key]['style'] = style
-                        combined[key]['prop_name'] = prop_name
-                        combined[key]['target_id'] = target_id
-                        combined[key]['is_union'] = is_union
-                        combined[key]['union_members'] = union_members if is_union else None
-                        combined[key]['reflexive'] = reflexive
-                        combined[key]['target_qname'] = target_qname
 
-        # 10. Define a sequence of associations that traverse all of the classes (hidden)
         prev = 'Invis'
         for assoc in sorted(associated_classes):
             assoc_id = get_id(assoc)
             dot.edge(prev, assoc_id, style="invis")
             prev = assoc_id
 
-        # Add associations from combined
         for key, data in combined.items():
             prop_name = data['prop_name']
             target_id = data['target_id']
             style = data['style']
             label_parts = data['label_parts']
-            label = f"«{', '.join(sorted(label_parts))}»\\nonProperty: {prop_name}" if label_parts else f"onProperty: {prop_name}"
-            if data['is_union']:
+            is_union = data['is_union']
+            union_members = data['union_members']
+            reflexive = data['reflexive']
+            target_qname = data['target_qname']
+            label = f"«{', '.join(sorted(set(label_parts)))}»\\nonProperty: {prop_name}" if label_parts else f"onProperty: {prop_name}"
+#            print(f"  - Adding edge: {cls_name} -> {target_qname}, Label: {label}, Style: {style}, Reflexive: {reflexive}")
+            if is_union:
                 union_id = target_id
-                members = data['union_members']
-                union_label = f'«unionOf»<BR/>[{ " or ".join(members) }]'
+                union_label = f'«unionOf»<BR/>[{ " or ".join(union_members) }]'
                 dot.node(union_id, f'<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1" BGCOLOR="lightyellow"><TR><TD ALIGN="CENTER">{union_label}</TD></TR></TABLE>>', margin="0")
-                for member in members:
+                for member in union_members:
                     assoc_id = get_id(member)
                     dot.edge(union_id, assoc_id, style="dotted", label="member", arrowhead="normal")
-            if data['reflexive']:
-                dot.edge(cls_id, cls_id, label=label, style=style)
+            if reflexive:
+                dot.edge(cls_id, cls_id, label=label, style=style, arrowhead="normal")
             else:
                 dot.edge(cls_id, target_id, label=label, style=style, arrowhead="normal")
 
         # Save DOT file and render SVG
-        dot_file = f"diagrams/{cls_name}.dot"
-        stem = f"diagrams/{cls_name}"
+        print(f"Saving {cls_name}.dot")
+        dot_file = os.path.join(diagrams_dir, f"{cls_name}.dot")
         dot.save(dot_file)
-        dot.render(stem, cleanup=False)
-        # Render PNG
-        dot.render(stem, format='png', cleanup=False)
-
+        dot.render(dot_file, cleanup=False)
+        dot.render(dot_file, format='png', cleanup=False)
         processed_count += 1
 
     except Exception as e:

@@ -17,16 +17,14 @@ def generate_diagram(g: Graph, cls: URIRef, cls_name: str, cls_id: str, ns: str,
         format="svg",
         graph_attr={"overlap": "false", "splines": "true", "rankdir": "TB"},
         node_attr={"shape": "none", "fontsize": "12", "fontname": "Arial", "margin": "0"},
-        edge_attr={"fontsize": "10", "fontname": "Arial"}
+        edge_attr={"fontsize": "11", "fontname": "Arial"}
     )
 
     # Define superclasses (only direct superclasses via rdfs:subClassOf)
     superclasses = set()
     for super_cls in g.objects(cls, RDFS.subClassOf):
         if isinstance(super_cls, URIRef) and super_cls != OWL.Thing and (super_cls, RDF.type, OWL.Class) in g:
-            super_cls_qname = get_qname(g, super_cls, ns, prefix_map)
-            if super_cls_qname != 'ITSThing':
-                superclasses.add(super_cls_qname)
+            superclasses.add(get_qname(g, super_cls, ns, prefix_map))        	
     for sup in sorted(superclasses):
         sup_id = get_id(sup)
         dot.node(
@@ -133,17 +131,24 @@ def generate_diagram(g: Graph, cls: URIRef, cls_name: str, cls_id: str, ns: str,
         associated_cluster.node('Invis', label='<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1"><TR><TD></TD></TR></TABLE>>', style='invis', margin="0")
         for assoc in sorted(associated_classes):
             assoc_id = get_id(assoc)
-            dot.node(
-                assoc_id,
-                label=f'<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1"><TR><TD BGCOLOR="lightgray" ALIGN="CENTER">{fmt_title(assoc, global_all_classes, ns, abstract_map)}</TD></TR></TABLE>>',
-                URL=f"../classes/{assoc}.md" if assoc in global_all_classes else None,
+            attrs = dict(
+                label=f'<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1">'
+                    f'<TR><TD BGCOLOR="lightgray" ALIGN="CENTER">{fmt_title(assoc, global_all_classes, ns, abstract_map)}</TD></TR>'
+                    f'</TABLE>>',
                 margin="0"
             )
+
+            # Only add URL if there’s no colon
+            if ":" not in assoc:
+                attrs["URL"] = f"../classes/{assoc}"
+                attrs["tooltip"] = assoc
+
+            associated_cluster.node(assoc_id, **attrs)            
 
     # Define generalization relationships
     for sup in sorted(superclasses):
         sup_id = get_id(sup)
-        dot.edge(sup_id, cls_id, arrowhead="onormal", style="solid")
+        dot.edge(cls_id, sup_id, arrowhead="onormal", style="solid")
 
     # Define invisible association
     if associated_classes:
@@ -262,7 +267,8 @@ def generate_diagram(g: Graph, cls: URIRef, cls_name: str, cls_id: str, ns: str,
         log.debug("  - Adding edge: %s -> %s, Label: %s, Style: %s, Reflexive: %s", cls_name, target_qname, label, style, reflexive)
         if is_union:
             union_id = target_id
-            union_label = f'«unionOf»<BR/>({" or ".join([fmt_title(m, global_all_classes, ns, abstract_map) for m in union_members])})'
+            union_label = f'«unionOf»<BR/>[{ " or ".join(union_members) }]'
+#            union_label = f'«unionOf»<BR/>({" or ".join([fmt_title(m, global_all_classes, ns, abstract_map) for m in union_members])})'
             dot.node(union_id, f'<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1" BGCOLOR="lightyellow"><TR><TD ALIGN="CENTER">{union_label}</TD></TR></TABLE>>', margin="0")
             for member in union_members:
                 assoc_id = get_id(member)

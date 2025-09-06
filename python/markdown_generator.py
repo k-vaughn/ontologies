@@ -3,7 +3,7 @@ import logging
 import yaml
 import re
 from rdflib import Graph, XSD, Literal, URIRef
-from utils import get_first_literal, hyperlink_class, insert_spaces, class_restrictions, iter_annotations
+from utils import get_first_literal, hyperlink_class, insert_spaces, class_restrictions, iter_annotations, DESC_PROPS
 from rdflib.namespace import DCTERMS, SKOS
 
 log = logging.getLogger("ofn2mkdocs")
@@ -17,7 +17,7 @@ class SafeMkDocsLoader(yaml.SafeLoader):
 yaml.SafeLoader.add_constructor('tag:yaml.org,2002:python/name:material.extensions.emoji.twemoji', SafeMkDocsLoader.ignore_python_name)
 yaml.SafeLoader.add_constructor('tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format', SafeMkDocsLoader.ignore_python_name)
 
-def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dict, global_all_classes: set, ns: str, ofn_path: str, errors: list, prefix_map: dict):
+def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dict, global_all_classes: set, ns: str, ofn_path: str, errors: list, prefix_map: dict, prop_map: dict):
     """Generate Markdown file for a class."""
     classes_dir = os.path.join(os.path.dirname(ofn_path), "classes")
     filename = os.path.join(classes_dir, f"{cls_name}.md")
@@ -53,12 +53,15 @@ def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dic
         formalization_md = ""
         if restr_rows:
             formalization_md += "## Formalization\n\n"
-            formalization_md += "| Property | Value Restriction |\n"
-            formalization_md += "|----------|-------------------|\n"
+            formalization_md += "| Property | Value Restriction | Definition |\n"
+            formalization_md += "|----------|-------------------|------------|\n"
             for prop, restr in sorted(restr_rows):
                 # Hyperlink local classes (no prefix)
                 restr_hlinked = re.sub(r'\b([A-Z][a-zA-Z0-9]*)\b', lambda m: hyperlink_class(m.group(0), global_all_classes, ns) if m.group(0) not in ['or', 'exactly', 'min', 'max'] else m.group(0), restr)
-                formalization_md += f"| {prop} | {restr_hlinked} |\n"
+                # Get property description
+                prop_uri = prop_map.get(prop)
+                prop_desc = get_first_literal(g, prop_uri, DESC_PROPS) if prop_uri else "---"
+                formalization_md += f"| {prop} | {restr_hlinked} | {prop_desc} |\n"
             formalization_md += "\n"
         other_ann = list(iter_annotations(g, cls, ns, prefix_map))
         other_md = ""
@@ -110,7 +113,10 @@ def update_mkdocs_nav(mkdocs_path: str, global_patterns: dict, global_all_classe
 
     # Add non-pattern classes
     pattern_members = set(sum([data["classes"] for data in global_patterns.values()], []))
-    non_pattern_classes = sorted(global_all_classes - pattern_members - pattern_names, key=str.lower)
+    non_pattern_classes = sorted(
+        [cls for cls in global_all_classes - pattern_members - pattern_names if ':' not in cls],
+        key=str.lower
+    )
     for cls_name in non_pattern_classes:
         if cls_name == 'ITSThing':
             continue  # Skip problematic classes

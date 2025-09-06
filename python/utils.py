@@ -7,7 +7,7 @@ from rdflib.namespace import DC, DCTERMS, SKOS
 log = logging.getLogger("ofn2mkdocs")
 
 # -------------------- namespaces --------------------
-DESC_PROPS = (DC.description, SKOS.definition, RDFS.comment)
+DESC_PROPS = (DC.description, SKOS.definition, RDFS.comment, DCTERMS.description)
 SKIP_IN_OTHER = set(DESC_PROPS) | {RDFS.label, DCTERMS.description, SKOS.note, SKOS.example}
 
 def _norm_base(u: str) -> str:

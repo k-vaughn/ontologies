@@ -41,7 +41,7 @@ def preprocess_ofn_file(ofn_path: str) -> str:
     return temp_path
 
 def process_ontology(ofn_path: str, errors: list, ontology_info) -> tuple:
-    """Process an OFN file and update ontology_info, return graph, namespace, prefix map, classes, and local classes."""
+    """Process an OFN file and update ontology_info, return graph, namespace, prefix map, classes, local classes, and property map."""
     # Preprocess .ofn file to remove SWRL rules
     temp_ofn_path = preprocess_ofn_file(ofn_path)
 
@@ -58,7 +58,7 @@ def process_ontology(ofn_path: str, errors: list, ontology_info) -> tuple:
         errors.append(error_msg)
         log.error(error_msg)
         os.remove(temp_ofn_path)
-        return None, None, None, None, None
+        return None, None, None, None, None, None
     finally:
         if os.path.exists(temp_ofn_path):
             os.remove(temp_ofn_path)
@@ -106,4 +106,13 @@ def process_ontology(ofn_path: str, errors: list, ontology_info) -> tuple:
     if local_classes:
         log.info("Local classes in %s: %s", ofn_path, [get_qname(g, cls, ns, prefix_map) for cls in local_classes])
 
-    return g, ns, prefix_map, classes, local_classes
+    # Create property map: qname to URI
+    prop_map = {}
+    for p in g.subjects(RDF.type, OWL.ObjectProperty):
+        qn = get_qname(g, p, ns, prefix_map)
+        prop_map[qn] = p
+    for p in g.subjects(RDF.type, OWL.DatatypeProperty):
+        qn = get_qname(g, p, ns, prefix_map)
+        prop_map[qn] = p
+
+    return g, ns, prefix_map, classes, local_classes, prop_map

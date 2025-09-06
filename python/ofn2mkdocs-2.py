@@ -56,12 +56,6 @@ def main():
         }
         try:
             # Process ontology
-            ontology_info[ofn_path] = {
-               "title": "Untitled Ontology",
-                "description": "",
-                "patterns": set(),
-                "non_pattern_classes": set()
-            }
             g, ns, prefix_map, classes, local_classes, prop_map = process_ontology(ofn_path, errors, ontology_info[ofn_path])
             if g is None:
                 continue
@@ -75,7 +69,6 @@ def main():
 
             for cls in local_classes:
                 cls_name = get_label(g, cls)
-                global_all_classes.add(cls_name)
                 if cls_name == 'ITSThing':
                     continue
                 pattern_literal = g.value(cls, XSD.pattern)

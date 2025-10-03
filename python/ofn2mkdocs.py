@@ -9,7 +9,7 @@ from utils import get_qname, get_label, is_abstract, get_id
 from rdflib import Graph, RDF, XSD, URIRef, Literal
 
 # -------------------- logging --------------------
-logging.basicConfig(level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 log = logging.getLogger("ofn2mkdocs")
 
 def main():

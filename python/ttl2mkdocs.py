@@ -9,13 +9,13 @@ from utils import get_qname, get_label, is_abstract, get_id
 from rdflib import Graph, RDF, XSD, URIRef, Literal
 
 # -------------------- logging --------------------
-logging.basicConfig(level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s")
-log = logging.getLogger("ofn2mkdocs")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+log = logging.getLogger("ttl2mkdocs")
 
 def main():
     # Check if script is called without arguments
     if len(sys.argv) != 1:
-        print("Usage: python ofn2mkdocs.py")
+        print("Usage: python ttl2mkdocs.py")
         sys.exit(1)
 
     # Check for mkdocs.yml in current directory
@@ -31,10 +31,10 @@ def main():
         print("Error: docs directory not found")
         sys.exit(1)
 
-    # Find all .ofn files in docs directory
-    ofn_files = [os.path.join(docs_dir, f) for f in os.listdir(docs_dir) if f.lower().endswith('.ofn')]
-    if not ofn_files:
-        print("No .ofn files found in docs/")
+    # Find all .ttl files in docs directory
+    ttl_files = [os.path.join(docs_dir, f) for f in os.listdir(docs_dir) if f.lower().endswith('.ttl')]
+    if not ttl_files:
+        print("No .ttl files found in docs/")
         sys.exit(0)
 
     # Initialize global collections
@@ -46,9 +46,9 @@ def main():
     processed_count = 0
 
     # Process each OFN file
-    for ofn_path in sorted(ofn_files):
+    for ttl_path in sorted(ttl_files):
         # Initialize ontology_info for this file
-        ontology_info[ofn_path] = {
+        ontology_info[ttl_path] = {
             "title": "Untitled Ontology",
             "description": "",
             "patterns": set(),
@@ -56,7 +56,13 @@ def main():
         }
         try:
             # Process ontology
-            g, ns, prefix_map, classes, local_classes, prop_map = process_ontology(ofn_path, errors, ontology_info[ofn_path])
+            ontology_info[ttl_path] = {
+               "title": "Untitled Ontology",
+                "description": "",
+                "patterns": set(),
+                "non_pattern_classes": set()
+            }
+            g, ns, prefix_map, classes, local_classes, prop_map = process_ontology(ttl_path, errors, ontology_info[ttl_path])
             if g is None:
                 continue
 
@@ -69,6 +75,7 @@ def main():
 
             for cls in local_classes:
                 cls_name = get_label(g, cls)
+                global_all_classes.add(cls_name)
                 if cls_name == 'ITSThing':
                     continue
                 pattern_literal = g.value(cls, XSD.pattern)
@@ -77,9 +84,9 @@ def main():
                     if pattern_name not in global_patterns:
                         global_patterns[pattern_name] = {"classes": []}
                     global_patterns[pattern_name]["classes"].append(cls_name)
-                    ontology_info[ofn_path]["patterns"].add(pattern_name)
+                    ontology_info[ttl_path]["patterns"].add(pattern_name)
                 else:
-                    ontology_info[ofn_path]["non_pattern_classes"].add(cls_name)
+                    ontology_info[ttl_path]["non_pattern_classes"].add(cls_name)
 
             # Process classes for diagrams and Markdown
             for cls in sorted(local_classes, key=lambda u: get_label(g, u).lower()):
@@ -87,23 +94,23 @@ def main():
                 if cls_name == 'ITSThing':
                     continue
                 cls_id = get_id(cls_name)
-                log.info("Processing class: %s from %s", cls_name, ofn_path)
+                log.info("Processing class: %s from %s", cls_name, ttl_path)
 
                 try:
                     # Generate diagram
-                    generate_diagram(g, cls, cls_name, cls_id, ns, global_all_classes, abstract_map, ofn_path, errors, prefix_map)
+                    generate_diagram(g, cls, cls_name, cls_id, ns, global_all_classes, abstract_map, ttl_path, errors, prefix_map)
 
                     # Generate Markdown
-                    generate_markdown(g, cls, cls_name, global_patterns, global_all_classes, ns, ofn_path, errors, prefix_map, prop_map)
+                    generate_markdown(g, cls, cls_name, global_patterns, global_all_classes, ns, ttl_path, errors, prefix_map, prop_map)
                     processed_count += 1
 
                 except Exception as e:
-                    error_msg = f"Error processing class {cls_name} from {ofn_path}: {str(e)}\n{traceback.format_exc()}"
+                    error_msg = f"Error processing class {cls_name} from {ttl_path}: {str(e)}\n{traceback.format_exc()}"
                     errors.append(error_msg)
                     log.error(error_msg)
 
         except Exception as e:
-            error_msg = f"Error processing ontology {ofn_path}: {str(e)}\n{traceback.format_exc()}"
+            error_msg = f"Error processing ontology {ttl_path}: {str(e)}\n{traceback.format_exc()}"
             errors.append(error_msg)
             log.error(error_msg)
             continue
@@ -118,7 +125,7 @@ def main():
 
         # Generate index.md
         try:
-            generate_index(docs_dir, ofn_files, ontology_info, global_patterns, errors)
+            generate_index(docs_dir, ttl_files, ontology_info, global_patterns, errors)
         except Exception as e:
             error_msg = f"Error generating index.md: {str(e)}\n{traceback.format_exc()}"
             errors.append(error_msg)

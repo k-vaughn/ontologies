@@ -2,7 +2,7 @@ import os
 import logging
 import yaml
 import re
-from rdflib import Graph, XSD, Literal, URIRef
+from rdflib import Graph, XSD, Literal, URIRef, OWL, RDFS, RDF
 from utils import get_first_literal, hyperlink_class, insert_spaces, class_restrictions, iter_annotations, DESC_PROPS
 from rdflib.namespace import DCTERMS, SKOS
 
@@ -17,12 +17,76 @@ class SafeMkDocsLoader(yaml.SafeLoader):
 yaml.SafeLoader.add_constructor('tag:yaml.org,2002:python/name:material.extensions.emoji.twemoji', SafeMkDocsLoader.ignore_python_name)
 yaml.SafeLoader.add_constructor('tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format', SafeMkDocsLoader.ignore_python_name)
 
+def get_specializations(g: Graph, cls: URIRef, global_all_classes: set, ns: str, prefix_map: dict) -> list:
+    """Find all subclasses (direct and indirect) of the given class."""
+    # Temporarily set logging to DEBUG
+    # original_level = log.getEffectiveLevel()
+    # log.setLevel(logging.DEBUG)
+    
+    specializations = []
+    # Collect all subclasses using transitive closure
+    visited = set()
+    def collect_subclasses(c):
+        if c in visited:
+            return
+        visited.add(c)
+        for s in g.subjects(RDFS.subClassOf, c):
+            if isinstance(s, URIRef) and s != c:
+                cls_name = get_first_literal(g, s, [RDFS.label]) or str(s).split('/')[-1].split('#')[-1]
+                if cls_name in global_all_classes:
+                    desc = get_first_literal(g, s, [DCTERMS.description]) or ""
+                    specializations.append((cls_name, desc))
+                    collect_subclasses(s)
+
+    collect_subclasses(cls)
+    log.debug(f"Specializations for {cls}: {specializations}")
+    
+    # Restore original logging level
+    # log.setLevel(original_level)
+    return sorted(specializations, key=lambda x: x[0].lower())
+
+def get_used_by(g: Graph, cls: URIRef, global_all_classes: set, ns: str, prefix_map: dict) -> list:
+    """Find classes and their properties that reference this class via object property restrictions."""
+    # Temporarily set logging to DEBUG
+    # original_level = log.getEffectiveLevel()
+    # log.setLevel(logging.DEBUG)
+    
+    used_by = []
+    # Check all OWL restrictions
+    for s in g.subjects(RDF.type, OWL.Restriction):
+        prop = g.value(s, OWL.onProperty)
+        for predicate in [OWL.allValuesFrom, OWL.someValuesFrom, OWL.hasValue]:
+            target = g.value(s, predicate)
+            if target == cls and prop:
+                prop_name = get_first_literal(g, prop, [RDFS.label]) or str(prop).split('/')[-1].split('#')[-1]
+                # Find classes that use this restriction
+                for cls_sub in g.subjects(RDFS.subClassOf, s):
+                    if isinstance(cls_sub, URIRef):
+                        cls_name = get_first_literal(g, cls_sub, [RDFS.label]) or str(cls_sub).split('/')[-1].split('#')[-1]
+                        if cls_name in global_all_classes:
+                            used_by.append((cls_name, prop_name))
+                # Check if the restriction itself is a named class
+                cls_name = get_first_literal(g, s, [RDFS.label]) or str(s).split('/')[-1].split('#')[-1]
+                if cls_name in global_all_classes:
+                    used_by.append((cls_name, prop_name))
+
+    log.debug(f"Used by for {cls}: {used_by}")
+    
+    # Restore original logging level
+    # log.setLevel(original_level)
+    return sorted(used_by, key=lambda x: x[0].lower())
+
 def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dict, global_all_classes: set, ns: str, ofn_path: str, errors: list, prefix_map: dict, prop_map: dict):
     """Generate Markdown file for a class."""
     classes_dir = os.path.join(os.path.dirname(ofn_path), "classes")
     filename = os.path.join(classes_dir, f"{cls_name}.md")
-    log.debug("Writing %s", filename)
-
+    
+    # Temporarily set logging to DEBUG
+    # original_level = log.getEffectiveLevel()
+    # log.setLevel(logging.DEBUG)
+    
+    log.debug(f"Writing {filename} for class {cls_name} ({cls})")
+    
     # Check if this is a pattern class
     is_pattern = cls_name in global_patterns
 
@@ -49,10 +113,26 @@ def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dic
         example = get_first_literal(g, cls, [SKOS.example]) or ""
         example_md = f"EXAMPLE: {example}\n\n" if example else ""
         diagram_line = f"![{cls_name} Diagram](../diagrams/{cls_name}.svg)\n\n<a href=\"../../diagrams/{cls_name}.svg\">Open interactive {cls_name} diagram</a>\n\n"
+        
+        # Specializations section
+        specializations = get_specializations(g, cls, global_all_classes, ns, prefix_map)
+        specializations_md = ""
+        if specializations:
+            specializations_md += f"## Specializations of {cls_name}\n\n"
+            specializations_md += "| Class | Description |\n"
+            specializations_md += "|-------|-------------|\n"
+            for spec_cls, spec_desc in specializations:
+                display_spec = insert_spaces(spec_cls)
+                specializations_md += f"| [{display_spec}]({spec_cls}.md) | {spec_desc} |\n"
+            specializations_md += "\n"
+        else:
+            log.debug(f"No specializations found for {cls_name}")
+        
+        # Formalization section
         restr_rows = class_restrictions(g, cls, ns, prefix_map)
         formalization_md = ""
         if restr_rows:
-            formalization_md += "## Formalization\n\n"
+            formalization_md += f"## Formalization for {cls_name}\n\n"
             formalization_md += "| Property | Value Restriction | Definition |\n"
             formalization_md += "|----------|-------------------|------------|\n"
             for prop, restr in sorted(restr_rows):
@@ -63,6 +143,18 @@ def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dic
                 prop_desc = get_first_literal(g, prop_uri, DESC_PROPS) if prop_uri else "---"
                 formalization_md += f"| {prop} | {restr_hlinked} | {prop_desc} |\n"
             formalization_md += "\n"
+        
+        # Used By section
+        used_by = get_used_by(g, cls, global_all_classes, ns, prefix_map)
+        used_by_md = ""
+        if used_by:
+            used_by_md += f"## {cls_name} Is Used By\n\n"
+            for used_cls, prop_name in used_by:
+                used_by_md += f"- [{used_cls}]({used_cls}.md).{prop_name}\n"
+            used_by_md += "\n"
+        else:
+            log.debug(f"No used by classes found for {cls_name}")
+        
         other_ann = list(iter_annotations(g, cls, ns, prefix_map))
         other_md = ""
         if other_ann:
@@ -72,8 +164,11 @@ def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dic
                     v = hyperlink_class(v, global_all_classes, ns)
                 other_md += f"- **{p}**: {v}\n"
             other_md += "\n"
-        content = title + top_desc + note_md + example_md + diagram_line + formalization_md + other_md
+        content = title + top_desc + note_md + example_md + diagram_line + specializations_md + formalization_md + used_by_md + other_md
 
+    # Restore original logging level
+    # log.setLevel(original_level)
+    
     # Write the Markdown file
     try:
         with open(filename, "w", encoding="utf-8") as f:

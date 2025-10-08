@@ -84,8 +84,11 @@ def get_qname(g: Graph, uri: URIRef, ns: str, prefix_map: dict):
             if prefix_map[base] == ":":
                 qname = local
             else:
-                qname = prefix_map[base] + local
+                qname = prefix_map[base] + ":" + local
+            original_level = log.getEffectiveLevel()
+            log.setLevel(logging.DEBUG)
             log.debug("Matched prefix %s, returning QName: %s", base, qname)
+            log.setLevel(original_level)
             return qname
     log.warning("No prefix found for URI: %s, namespace: %s, prefix_map: %s", s, ns, prefix_map)
     return s
@@ -253,8 +256,8 @@ def get_id(qname):
     if not qname:
         log.error("Invalid qname provided to get_id: %s", qname)
         return "INVALID_QNAME"
-    if ':' in qname:
-        prefix, local = qname.split(':', 1)
+    if '::' in qname:
+        prefix, local = qname.split('::', 1)
         return prefix + '_' + local
     return qname
 

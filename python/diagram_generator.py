@@ -261,9 +261,9 @@ def generate_diagram(g: Graph, cls: URIRef, cls_name: str, cls_id: str, ns: str,
         target_qname = data['target_qname']
         label_prefix = f"«{', '.join(sorted(set(label_parts)))}» " if label_parts else ""
         if style == "solid":
-            label = label_prefix + prop_name
+            label = prop_name + " " + label_prefix
         else:
-            label = label_prefix + "onProperty: " + prop_name
+            label = "onProperty: " + prop_name + " " + label_prefix
         log.debug("  - Adding edge: %s -> %s, Label: %s, Style: %s, Reflexive: %s", cls_name, target_qname, label, style, reflexive)
         if is_union:
             union_id = target_id

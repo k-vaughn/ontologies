@@ -55,11 +55,15 @@ def process_ontology(ttl_path: str, errors: list, ontology_info) -> tuple:
 
     # Extract classes
     classes = set(g.subjects(RDF.type, OWL.Class)) - {OWL.Thing}
-    log.info("Found %d classes in ontology %s: %s", len(classes), ttl_path, [str(cls) for cls in classes])
+    log.info("Found %d classes in ontology %s:", len(classes), ttl_path)
+    for cls in classes:
+        log.info("  %s", str(cls))
 
     # Filter classes by namespace
     local_classes = [cls for cls in classes if str(cls).startswith(ns)]
-    log.info("Filtered to %d local classes in namespace %s for %s: %s", len(local_classes), ns, ttl_path, [get_qname(g, cls, ns, prefix_map) for cls in local_classes])
+    log.info("Filtered to %d local classes in namespace %s for %s:", len(local_classes), ns, ttl_path)
+    for cls in local_classes:
+        log.info("  %s", get_qname(g, cls, ns, prefix_map))
 
     # Create property map: qname to URI
     prop_map = {}

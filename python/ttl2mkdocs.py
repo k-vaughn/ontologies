@@ -9,7 +9,7 @@ from utils import get_qname, get_label, is_abstract, get_id
 from rdflib import Graph, RDF, XSD, URIRef, Literal
 
 # -------------------- logging --------------------
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s")
 log = logging.getLogger("ttl2mkdocs")
 
 def main():
@@ -45,7 +45,7 @@ def main():
     errors = []
     processed_count = 0
 
-    # Process each OFN file
+    # Process each TTL file
     for ttl_path in sorted(ttl_files):
         # Initialize ontology_info for this file
         ontology_info[ttl_path] = {

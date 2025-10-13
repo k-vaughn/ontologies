@@ -76,9 +76,9 @@ def get_used_by(g: Graph, cls: URIRef, global_all_classes: set, ns: str, prefix_
     # log.setLevel(original_level)
     return sorted(used_by, key=lambda x: x[0].lower())
 
-def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dict, global_all_classes: set, ns: str, ofn_path: str, errors: list, prefix_map: dict, prop_map: dict):
+def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dict, global_all_classes: set, ns: str, ttl_path: str, errors: list, prefix_map: dict, prop_map: dict):
     """Generate Markdown file for a class."""
-    classes_dir = os.path.join(os.path.dirname(ofn_path), "classes")
+    classes_dir = os.path.join(os.path.dirname(ttl_path), "classes")
     filename = os.path.join(classes_dir, f"{cls_name}.md")
     
     # Temporarily set logging to DEBUG
@@ -174,7 +174,7 @@ def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dic
         with open(filename, "w", encoding="utf-8") as f:
             f.write(content)
     except Exception as e:
-        error_msg = f"Error writing Markdown for {cls_name} from {ofn_path}: {str(e)}\n{traceback.format_exc()}"
+        error_msg = f"Error writing Markdown for {cls_name} from {ttl_path}: {str(e)}\n{traceback.format_exc()}"
         errors.append(error_msg)
         log.error(error_msg)
         raise
@@ -235,18 +235,19 @@ def generate_index(docs_dir: str, ofn_files: list, ontology_info: dict, global_p
 
     if len(ofn_files) == 1:
         # Single OFN file case
-        ofn_path = ofn_files[0]
-        if ofn_path not in ontology_info:
-            error_msg = f"Skipping index.md generation for {ofn_path} due to earlier processing failure"
+        ttl_path = ofn_files[0]
+        if ttl_path not in ontology_info:
+            error_msg = f"Skipping index.md generation for {ttl_path} due to earlier processing failure"
             errors.append(error_msg)
             log.error(error_msg)
             return
-        ofn_filename = os.path.basename(ofn_path)
-        title = ontology_info[ofn_path]["title"]
-        description = ontology_info[ofn_path]["description"]
-        patterns = sorted(ontology_info[ofn_path]["patterns"], key=str.lower)
+        ttl_filename = os.path.basename(ttl_path)
+        ofn_filename = ttl_filename.rsplit('.', 1)[0] + '.ofn'
+        title = ontology_info[ttl_path]["title"]
+        description = ontology_info[ttl_path]["description"]
+        patterns = sorted(ontology_info[ttl_path]["patterns"], key=str.lower)
         pattern_names = set(global_patterns.keys())
-        non_pattern_classes = sorted(ontology_info[ofn_path]["non_pattern_classes"] - pattern_names, key=str.lower)
+        non_pattern_classes = sorted(ontology_info[ttl_path]["non_pattern_classes"] - pattern_names, key=str.lower)
 
         index_content += f"# {title}\n\n"
         if description:
@@ -264,7 +265,7 @@ def generate_index(docs_dir: str, ofn_files: list, ontology_info: dict, global_p
                     continue  # Skip problematic classes
                 display_cls = insert_spaces(cls_name)
                 index_content += f"- [{display_cls}](classes/{cls_name}.md)\n"
-        index_content += f"\nThe formal definition of these patterns is available in [OWL Functional Notation]({ofn_filename}).\n"
+        index_content += f"\nThe formal definition of these patterns is available in [OWL Functional Notation]({ofn_filename}) and  [Turtle Syntax]({ttl_filename}).\n"
     else:
         # Multiple OFN files case
         readme_path = os.path.join(os.path.dirname(docs_dir), "README.md")
@@ -282,22 +283,23 @@ def generate_index(docs_dir: str, ofn_files: list, ontology_info: dict, global_p
             title = "No README.md file found for title"
 
         index_content += f"# {title}\n\n"
-        for ofn_path in sorted(ofn_files):
-            if ofn_path not in ontology_info:
-                error_msg = f"Skipping index.md generation for {ofn_path} due to earlier processing failure"
+        for ttl_path in sorted(ofn_files):
+            if ttl_path not in ontology_info:
+                error_msg = f"Skipping index.md generation for {ttl_path} due to earlier processing failure"
                 errors.append(error_msg)
                 log.error(error_msg)
                 continue
-            ofn_filename = os.path.basename(ofn_path)
-            title = ontology_info[ofn_path]["title"] or "Unknown Title"
-            description = ontology_info[ofn_path]["description"] or "Unknown description"
-            if not ontology_info[ofn_path]["title"]:
-                log.warning("The ontology %s is missing a dc:title annotation.", ofn_filename)
-            if not ontology_info[ofn_path]["description"]:
-                log.warning("The ontology %s is missing a dcterms:description annotation.", ofn_filename)
-            patterns = sorted(ontology_info[ofn_path]["patterns"], key=str.lower)
+            ttl_filename = os.path.basename(ttl_path)
+            ofn_filename = ttl_filename.rsplit('.', 1)[0] + '.ofn'
+            title = ontology_info[ttl_path]["title"] or "Unknown Title"
+            description = ontology_info[ttl_path]["description"] or "Unknown description"
+            if not ontology_info[ttl_path]["title"]:
+                log.warning("The ontology %s is missing a dc:title annotation.", ttl_filename)
+            if not ontology_info[ttl_path]["description"]:
+                log.warning("The ontology %s is missing a dcterms:description annotation.", ttl_filename)
+            patterns = sorted(ontology_info[ttl_path]["patterns"], key=str.lower)
             pattern_names = set(global_patterns.keys())
-            non_pattern_classes = sorted(ontology_info[ofn_path]["non_pattern_classes"] - pattern_names, key=str.lower)
+            non_pattern_classes = sorted(ontology_info[ttl_path]["non_pattern_classes"] - pattern_names, key=str.lower)
 
             index_content += f"## {title}\n\n"
             if description:
@@ -315,7 +317,7 @@ def generate_index(docs_dir: str, ofn_files: list, ontology_info: dict, global_p
                         continue  # Skip problematic classes
                     display_cls = insert_spaces(cls_name)
                     index_content += f"- [{display_cls}](classes/{cls_name}.md)\n"
-            index_content += f"\nThe formal definition of these patterns is available in [OWL Functional Notation]({ofn_filename}).\n\n"
+            index_content += f"\nThe formal definition of these patterns is available in [OWL Functional Notation]({ofn_filename}) and  [Turtle Syntax]({ttl_filename}).\n\n"
 
     # Write index.md
     try:

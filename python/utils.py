@@ -57,6 +57,7 @@ def get_qname(g: Graph, uri: URIRef, ns: str, prefix_map: dict):
     if uri is None or not str(uri).strip():
         log.error("Invalid URI provided to get_qname: %s", uri)
         return "INVALID_URI"
+    log.info("URI = %s", uri)
     s = str(uri)
     norm = _norm_base(s)
     log.debug("Processing URI: %s, normalized: %s, namespace: %s", s, norm, ns)
@@ -85,12 +86,14 @@ def get_qname(g: Graph, uri: URIRef, ns: str, prefix_map: dict):
                 qname = local
             else:
                 qname = prefix_map[base] + ":" + local
-            original_level = log.getEffectiveLevel()
-            log.setLevel(logging.DEBUG)
-            log.debug("Matched prefix %s, returning QName: %s", base, qname)
-            log.setLevel(original_level)
+#            original_level = log.getEffectiveLevel()
+#            log.setLevel(logging.DEBUG)
+#            log.debug("Matched prefix %s, returning QName: %s", base, qname)
+#            log.setLevel(original_level)
             return qname
-    log.warning("No prefix found for URI: %s, namespace: %s, prefix_map: %s", s, ns, prefix_map)
+    log.warning("No prefix found for URI: %s, namespace: %s, prefix_map:", s, ns)
+    for prefix in prefix_map:
+        log.info("  %s", str(prefix))
     return s
 
 def get_label(g: Graph, c: URIRef) -> str:

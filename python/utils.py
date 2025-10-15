@@ -262,7 +262,7 @@ def hyperlink_class(name: str, all_classes: set, ns: str):
 def fmt_title(name: str, all_classes: set, ns: str, abstract_map: dict) -> str:
     """Format class title for Graphviz, with URL attribute for local classes."""
     is_local = ':' not in name and name in all_classes
-    name = name.replace(":", "::")
+#    name = name.replace(":", "::")
     display_name = f"<I>{name}</I>" if abstract_map.get(name, False) else name
     return display_name
 
@@ -279,8 +279,8 @@ def get_id(qname):
     if not qname:
         log.error("Invalid qname provided to get_id: %s", qname)
         return "INVALID_QNAME"
-    if '::' in qname:
-        prefix, local = qname.split('::', 1)
+    if ':' in qname:
+        prefix, local = qname.split(':', 1)
         return prefix + '_' + local
     return qname
 

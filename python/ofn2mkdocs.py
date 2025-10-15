@@ -9,7 +9,7 @@ from utils import get_qname, get_label, is_abstract, get_id
 from rdflib import Graph, RDF, XSD, URIRef, Literal
 
 # -------------------- logging --------------------
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s")
 log = logging.getLogger("ofn2mkdocs")
 
 def main():
@@ -33,6 +33,12 @@ def main():
 
     # Find all .ofn files in docs directory
     ofn_files = [os.path.join(docs_dir, f) for f in os.listdir(docs_dir) if f.lower().endswith('.ofn')]
+    
+    # Check for .ttl files and warn if found
+    ttl_files = [f for f in os.listdir(docs_dir) if f.lower().endswith('.ttl')]
+    if ttl_files:
+        log.warning("Found .ttl files in docs directory, which will be ignored: %s", ttl_files)
+    
     if not ofn_files:
         print("No .ofn files found in docs/")
         sys.exit(0)
@@ -55,13 +61,7 @@ def main():
             "non_pattern_classes": set()
         }
         try:
-            # Process ontology
-            ontology_info[ofn_path] = {
-               "title": "Untitled Ontology",
-                "description": "",
-                "patterns": set(),
-                "non_pattern_classes": set()
-            }
+            # Process ontology and generate TTL
             g, ns, prefix_map, classes, local_classes, prop_map = process_ontology(ofn_path, errors, ontology_info[ofn_path])
             if g is None:
                 continue

@@ -3,10 +3,10 @@ import logging
 import yaml
 import re
 from rdflib import Graph, XSD, Literal, URIRef, OWL, RDFS, RDF
-from utils import get_first_literal, hyperlink_class, insert_spaces, class_restrictions, iter_annotations, DESC_PROPS
+from utils import get_qname, get_first_literal, hyperlink_class, insert_spaces, class_restrictions, iter_annotations, DESC_PROPS
 from rdflib.namespace import DCTERMS, SKOS
 
-log = logging.getLogger("ofn2mkdocs")
+log = logging.getLogger("owl2mkdocs")  # Updated for owl2mkdocs compatibility
 
 class SafeMkDocsLoader(yaml.SafeLoader):
     """Custom YAML loader to handle MkDocs-specific python/name tags."""
@@ -16,15 +16,11 @@ class SafeMkDocsLoader(yaml.SafeLoader):
 
 yaml.SafeLoader.add_constructor('tag:yaml.org,2002:python/name:material.extensions.emoji.twemoji', SafeMkDocsLoader.ignore_python_name)
 yaml.SafeLoader.add_constructor('tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format', SafeMkDocsLoader.ignore_python_name)
+yaml.SafeLoader.add_constructor('tag:yaml.org,2002:python/name:material.extensions.emoji.to_svg', SafeMkDocsLoader.ignore_python_name)
 
 def get_specializations(g: Graph, cls: URIRef, global_all_classes: set, ns: str, prefix_map: dict) -> list:
     """Find all subclasses (direct and indirect) of the given class."""
-    # Temporarily set logging to DEBUG
-    # original_level = log.getEffectiveLevel()
-    # log.setLevel(logging.DEBUG)
-    
     specializations = []
-    # Collect all subclasses using transitive closure
     visited = set()
     def collect_subclasses(c):
         if c in visited:
@@ -37,53 +33,37 @@ def get_specializations(g: Graph, cls: URIRef, global_all_classes: set, ns: str,
                     desc = get_first_literal(g, s, [DCTERMS.description]) or ""
                     specializations.append((cls_name, desc))
                     collect_subclasses(s)
-
     collect_subclasses(cls)
     log.debug(f"Specializations for {cls}: {specializations}")
-    
-    # Restore original logging level
-    # log.setLevel(original_level)
     return sorted(specializations, key=lambda x: x[0].lower())
 
 def get_used_by(g: Graph, cls: URIRef, global_all_classes: set, ns: str, prefix_map: dict) -> list:
     """Find classes and their properties that reference this class via object property restrictions."""
-    # Temporarily set logging to DEBUG
-    # original_level = log.getEffectiveLevel()
-    # log.setLevel(logging.DEBUG)
-    
     used_by = []
-    # Check all OWL restrictions
     for s in g.subjects(RDF.type, OWL.Restriction):
         prop = g.value(s, OWL.onProperty)
         for predicate in [OWL.allValuesFrom, OWL.someValuesFrom, OWL.hasValue]:
             target = g.value(s, predicate)
             if target == cls and prop:
-                prop_name = get_first_literal(g, prop, [RDFS.label]) or str(prop).split('/')[-1].split('#')[-1]
-                # Find classes that use this restriction
+                prop_name = get_qname(g, prop, ns, prefix_map)
+#                inverse_prop = g.value(None, OWL.inverseOf, prop)
+#                if inverse_prop:
+#                    prop_name = f"{get_qname(g, inverse_prop, ns, prefix_map)}^-1"
                 for cls_sub in g.subjects(RDFS.subClassOf, s):
                     if isinstance(cls_sub, URIRef):
                         cls_name = get_first_literal(g, cls_sub, [RDFS.label]) or str(cls_sub).split('/')[-1].split('#')[-1]
                         if cls_name in global_all_classes:
                             used_by.append((cls_name, prop_name))
-                # Check if the restriction itself is a named class
                 cls_name = get_first_literal(g, s, [RDFS.label]) or str(s).split('/')[-1].split('#')[-1]
                 if cls_name in global_all_classes:
                     used_by.append((cls_name, prop_name))
-
     log.debug(f"Used by for {cls}: {used_by}")
-    
-    # Restore original logging level
-    # log.setLevel(original_level)
     return sorted(used_by, key=lambda x: x[0].lower())
 
-def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dict, global_all_classes: set, ns: str, ttl_path: str, errors: list, prefix_map: dict, prop_map: dict):
+def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dict, global_all_classes: set, ns: str, file_path: str, errors: list, prefix_map: dict, prop_map: dict):
     """Generate Markdown file for a class."""
-    classes_dir = os.path.join(os.path.dirname(ttl_path), "classes")
+    classes_dir = os.path.join(os.path.dirname(file_path), "classes")
     filename = os.path.join(classes_dir, f"{cls_name}.md")
-    
-    # Temporarily set logging to DEBUG
-    # original_level = log.getEffectiveLevel()
-    # log.setLevel(logging.DEBUG)
     
     log.debug(f"Writing {filename} for class {cls_name} ({cls})")
     
@@ -133,54 +113,52 @@ def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dic
         formalization_md = ""
         if restr_rows:
             formalization_md += f"## Formalization for {cls_name}\n\n"
-            formalization_md += "| Property | Value Restriction | Definition |\n"
-            formalization_md += "|----------|-------------------|------------|\n"
-            for prop, restr in sorted(restr_rows):
-                # Hyperlink local classes (no prefix)
-                restr_hlinked = re.sub(r'\b([A-Z][a-zA-Z0-9]*)\b', lambda m: hyperlink_class(m.group(0), global_all_classes, ns) if m.group(0) not in ['or', 'exactly', 'min', 'max'] else m.group(0), restr)
-                # Get property description
-                prop_uri = prop_map.get(prop)
-                prop_desc = get_first_literal(g, prop_uri, DESC_PROPS) if prop_uri else "---"
-                formalization_md += f"| {prop} | {restr_hlinked} | {prop_desc} |\n"
+            formalization_md += "| Property | Constraint |\n"
+            formalization_md += "|----------|------------|\n"
+            for prop, constr in sorted(restr_rows):
+                log.debug(f"Restriction for {cls_name}: ({prop}, '{constr}')")
+                formalization_md += f"| {prop} | {constr} |\n"
             formalization_md += "\n"
         
-        # Used By section
+        # Used by section
         used_by = get_used_by(g, cls, global_all_classes, ns, prefix_map)
         used_by_md = ""
         if used_by:
-            used_by_md += f"## {cls_name} Is Used By\n\n"
-            for used_cls, prop_name in used_by:
-                used_by_md += f"- [{used_cls}]({used_cls}.md).{prop_name}\n"
+            used_by_md += f"## Used by classes\n\n"
+            used_by_md += "| Class | Property |\n"
+            used_by_md += "|-------|----------|\n"
+            for used_cls, used_prop in used_by:
+                display_used = insert_spaces(used_cls)
+                used_by_md += f"| [{display_used}]({used_cls}.md) | {used_prop} |\n"
             used_by_md += "\n"
-        else:
-            log.debug(f"No used by classes found for {cls_name}")
         
-        other_ann = list(iter_annotations(g, cls, ns, prefix_map))
-        other_md = ""
-        if other_ann:
-            other_md += "## Other Annotations\n\n"
-            for p, v in sorted(other_ann):
-                if p == 'xsd:pattern':
-                    v = hyperlink_class(v, global_all_classes, ns)
-                other_md += f"- **{p}**: {v}\n"
-            other_md += "\n"
-        content = title + top_desc + note_md + example_md + diagram_line + specializations_md + formalization_md + used_by_md + other_md
+        # Other annotations
+        other_annot_md = ""
+        annotations = list(iter_annotations(g, cls, ns, prefix_map))
+        if annotations:
+            other_annot_md += "## Other annotations\n\n"
+            other_annot_md += "| Annotation | Value |\n"
+            other_annot_md += "|------------|-------|\n"
+            for pred, val in sorted(annotations):
+                other_annot_md += f"| {pred} | {val} |\n"
+            other_annot_md += "\n"
+        
+        content = title + top_desc + note_md + example_md + diagram_line + specializations_md + formalization_md + used_by_md + other_annot_md
 
-    # Restore original logging level
-    # log.setLevel(original_level)
-    
-    # Write the Markdown file
+    # Write Markdown file
     try:
+        os.makedirs(classes_dir, exist_ok=True)
         with open(filename, "w", encoding="utf-8") as f:
             f.write(content)
+        log.info("Generated Markdown file: %s", filename)
     except Exception as e:
-        error_msg = f"Error writing Markdown for {cls_name} from {ttl_path}: {str(e)}\n{traceback.format_exc()}"
+        error_msg = f"Error writing Markdown for {cls_name} from {file_path}: {str(e)}\n{traceback.format_exc()}"
         errors.append(error_msg)
         log.error(error_msg)
         raise
 
 def update_mkdocs_nav(mkdocs_path: str, global_patterns: dict, global_all_classes: set, errors: list):
-    """Update mkdocs.yml navigation section."""
+    """Update mkdocs.yml navigation with patterns and classes."""
     try:
         with open(mkdocs_path, 'r', encoding="utf-8") as f:
             config = yaml.load(f, Loader=SafeMkDocsLoader)
@@ -190,15 +168,13 @@ def update_mkdocs_nav(mkdocs_path: str, global_patterns: dict, global_all_classe
         log.error(error_msg)
         raise
 
-    # Create navigation structure
     new_nav = [{"Home": "index.md"}]
     pattern_names = set(global_patterns.keys())
-    for pat_cls_name in sorted(pattern_names, key=str.lower):
-        if pat_cls_name == 'ITSThing':
-            continue  # Skip problematic classes
-        display_pat = insert_spaces(pat_cls_name)
-        sub_nav = [{"Overview": f"classes/{pat_cls_name}.md"}]
-        member_classes = sorted(global_patterns[pat_cls_name]["classes"], key=str.lower)
+    sorted_patterns = sorted(pattern_names, key=str.lower)
+    for pat_name in sorted_patterns:
+        display_pat = insert_spaces(pat_name)
+        sub_nav = []
+        member_classes = sorted(global_patterns[pat_name]["classes"], key=str.lower)
         for mem_cls_name in member_classes:
             if mem_cls_name == 'ITSThing':
                 continue  # Skip problematic classes
@@ -228,26 +204,25 @@ def update_mkdocs_nav(mkdocs_path: str, global_patterns: dict, global_all_classe
         log.error(error_msg)
         raise
 
-def generate_index(docs_dir: str, ofn_files: list, ontology_info: dict, global_patterns: dict, errors: list):
+def generate_index(docs_dir: str, input_files: list, ontology_info: dict, global_patterns: dict, errors: list):
     """Generate index.md file."""
     index_path = os.path.join(docs_dir, "index.md")
     index_content = ""
 
-    if len(ofn_files) == 1:
-        # Single OFN file case
-        ttl_path = ofn_files[0]
-        if ttl_path not in ontology_info:
-            error_msg = f"Skipping index.md generation for {ttl_path} due to earlier processing failure"
+    if len(input_files) == 1:
+        # Single file case
+        file_path = input_files[0]
+        if file_path not in ontology_info:
+            error_msg = f"Skipping index.md generation for {file_path} due to earlier processing failure"
             errors.append(error_msg)
             log.error(error_msg)
             return
-        ttl_filename = os.path.basename(ttl_path)
-        ofn_filename = ttl_filename.rsplit('.', 1)[0] + '.ofn'
-        title = ontology_info[ttl_path]["title"]
-        description = ontology_info[ttl_path]["description"]
-        patterns = sorted(ontology_info[ttl_path]["patterns"], key=str.lower)
+        filename = os.path.basename(file_path)
+        title = ontology_info[file_path]["title"]
+        description = ontology_info[file_path]["description"]
+        patterns = sorted(ontology_info[file_path]["patterns"], key=str.lower)
         pattern_names = set(global_patterns.keys())
-        non_pattern_classes = sorted(ontology_info[ttl_path]["non_pattern_classes"] - pattern_names, key=str.lower)
+        non_pattern_classes = sorted(ontology_info[file_path]["non_pattern_classes"] - pattern_names, key=str.lower)
 
         index_content += f"# {title}\n\n"
         if description:
@@ -265,9 +240,9 @@ def generate_index(docs_dir: str, ofn_files: list, ontology_info: dict, global_p
                     continue  # Skip problematic classes
                 display_cls = insert_spaces(cls_name)
                 index_content += f"- [{display_cls}](classes/{cls_name}.md)\n"
-        index_content += f"\nThe formal definition of these patterns is available in [OWL Functional Notation]({ofn_filename}) and  [Turtle Syntax]({ttl_filename}).\n"
+        index_content += f"\nThe formal definition of these patterns is available in [{os.path.splitext(filename)[1][1:].upper()} Syntax]({filename}).\n"
     else:
-        # Multiple OFN files case
+        # Multiple files case
         readme_path = os.path.join(os.path.dirname(docs_dir), "README.md")
         if os.path.exists(readme_path):
             try:
@@ -283,23 +258,22 @@ def generate_index(docs_dir: str, ofn_files: list, ontology_info: dict, global_p
             title = "No README.md file found for title"
 
         index_content += f"# {title}\n\n"
-        for ttl_path in sorted(ofn_files):
-            if ttl_path not in ontology_info:
-                error_msg = f"Skipping index.md generation for {ttl_path} due to earlier processing failure"
+        for file_path in sorted(input_files):
+            if file_path not in ontology_info:
+                error_msg = f"Skipping index.md generation for {file_path} due to earlier processing failure"
                 errors.append(error_msg)
                 log.error(error_msg)
                 continue
-            ttl_filename = os.path.basename(ttl_path)
-            ofn_filename = ttl_filename.rsplit('.', 1)[0] + '.ofn'
-            title = ontology_info[ttl_path]["title"] or "Unknown Title"
-            description = ontology_info[ttl_path]["description"] or "Unknown description"
-            if not ontology_info[ttl_path]["title"]:
-                log.warning("The ontology %s is missing a dc:title annotation.", ttl_filename)
-            if not ontology_info[ttl_path]["description"]:
-                log.warning("The ontology %s is missing a dcterms:description annotation.", ttl_filename)
-            patterns = sorted(ontology_info[ttl_path]["patterns"], key=str.lower)
+            filename = os.path.basename(file_path)
+            title = ontology_info[file_path]["title"] or "Unknown Title"
+            description = ontology_info[file_path]["description"] or "Unknown description"
+            if not ontology_info[file_path]["title"]:
+                log.warning("The ontology %s is missing a dc:title annotation.", filename)
+            if not ontology_info[file_path]["description"]:
+                log.warning("The ontology %s is missing a dcterms:description annotation.", filename)
+            patterns = sorted(ontology_info[file_path]["patterns"], key=str.lower)
             pattern_names = set(global_patterns.keys())
-            non_pattern_classes = sorted(ontology_info[ttl_path]["non_pattern_classes"] - pattern_names, key=str.lower)
+            non_pattern_classes = sorted(ontology_info[file_path]["non_pattern_classes"] - pattern_names, key=str.lower)
 
             index_content += f"## {title}\n\n"
             if description:
@@ -317,7 +291,7 @@ def generate_index(docs_dir: str, ofn_files: list, ontology_info: dict, global_p
                         continue  # Skip problematic classes
                     display_cls = insert_spaces(cls_name)
                     index_content += f"- [{display_cls}](classes/{cls_name}.md)\n"
-            index_content += f"\nThe formal definition of these patterns is available in [OWL Functional Notation]({ofn_filename}) and  [Turtle Syntax]({ttl_filename}).\n\n"
+            index_content += f"\nThe formal definition of these patterns is available in [{os.path.splitext(filename)[1][1:].upper()} Syntax]({filename}).\n\n"
 
     # Write index.md
     try:

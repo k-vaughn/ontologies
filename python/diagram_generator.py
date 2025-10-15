@@ -164,8 +164,8 @@ def generate_diagram(g: Graph, cls: URIRef, cls_name: str, cls_id: str, ns: str,
                 prop_name = get_qname(g, prop, ns, prefix_map)
                 is_refined = is_refined_property(g, cls, prop, restriction)
                 style = "dashed" if is_refined else "solid"
-                target_id = None
                 label_part = None
+                target_id = None
                 is_union = False
                 union_members = None
                 reflexive = False
@@ -267,8 +267,8 @@ def generate_diagram(g: Graph, cls: URIRef, cls_name: str, cls_id: str, ns: str,
         log.debug("  - Adding edge: %s -> %s, Label: %s, Style: %s, Reflexive: %s", cls_name, target_qname, label, style, reflexive)
         if is_union:
             union_id = target_id
-            union_label = f'«unionOf»<BR/>[{ " or ".join(union_members) }]'
 #            union_label = f'«unionOf»<BR/>({" or ".join([fmt_title(m, global_all_classes, ns, abstract_map) for m in union_members])})'
+            union_label = f'«unionOf»<BR/>[{ " or ".join(union_members) }]'
             dot.node(union_id, f'<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1" BGCOLOR="lightyellow"><TR><TD ALIGN="CENTER">{union_label}</TD></TR></TABLE>>', margin="0")
             for member in union_members:
                 assoc_id = get_id(member)
@@ -286,7 +286,7 @@ def generate_diagram(g: Graph, cls: URIRef, cls_name: str, cls_id: str, ns: str,
             dot.edge(cls_id, target_id, label=label, style=style, arrowhead="normal")
 
     # Save DOT file and render SVG/PNG
-    log.info("Saving diagram for %s", cls_name)
+    log.debug("Saving diagram for %s", cls_name)
     try:
         dot_file = os.path.join(diagrams_dir, f"{cls_name}")
         dot.save(dot_file)

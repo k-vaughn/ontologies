@@ -85,9 +85,14 @@ def get_qname(g: Graph, uri: URIRef, ns: str, prefix_map: dict):
                 qname = local
             else:
                 qname = prefix_map[base] + ":" + local
+#            original_level = log.getEffectiveLevel()
+#            log.setLevel(logging.DEBUG)
+#            log.debug("Matched prefix %s, returning QName: %s", base, qname)
+#            log.setLevel(original_level)
             return qname
-    if uri.startswith("http"):
-        log.warning("No prefix found for URI: %s, namespace: %s", s, ns)
+    log.warning("No prefix found for URI: %s, namespace: %s, prefix_map:", s, ns)
+    for prefix in prefix_map:
+        log.debug("  %s", str(prefix))
     return s
 
 def get_label(g: Graph, c: URIRef) -> str:
@@ -149,86 +154,104 @@ def get_union_classes(g: Graph, union: URIRef, ns: str, prefix_map: dict) -> Lis
 def class_restrictions(g: Graph, c: URIRef, ns: str, prefix_map: dict) -> List[Tuple[str, str]]:
     """Extract OWL restrictions and subClassOf constraints for Markdown output."""
     if c is None:
-        log.error("Invalid class URI provided to class_restrictions: None")
-        return []
+      return []
+
     rows = []
     for super_cls in g.objects(c, RDFS.subClassOf):
-        if isinstance(super_cls, URIRef) and super_cls != OWL.Thing and (super_cls, RDF.type, OWL.Class) in g:
-            rows.append((get_qname(g, super_cls, ns, prefix_map), "subClassOf"))
-        if (super_cls, RDF.type, OWL.Restriction) in g:
-            on_prop = g.value(super_cls, OWL.onProperty)
-            prop_name = None
-            if on_prop:
-                # Check if the property is an inverse
-#                inverse_prop = g.value(None, OWL.inverseOf, on_prop)
-#                if inverse_prop:
-#                    prop_name = f"{get_qname(g, inverse_prop, ns, prefix_map)}^-1"
-#                else:
-                prop_name = get_qname(g, on_prop, ns, prefix_map)
+        if isinstance(super_cls, URIRef) and (super_cls, RDF.type, OWL.Class) in g:
+            super_qname = get_qname(g, super_cls, ns, prefix_map)
+            rows.append(("subClassOf", super_qname))
+        elif (super_cls, RDF.type, OWL.Restriction) in g:
+            restr = super_cls
+            on_prop = get_qname(g, g.value(restr, OWL.onProperty), ns, prefix_map)
+
+            # All values from
+            all_values_from = g.value(restr, OWL.allValuesFrom)
+            if all_values_from:
+                label_parts = ["only"]
+                target = all_values_from
+                union_classes = get_union_classes(g, target, ns, prefix_map)
+                if union_classes:
+                    target_str = f"({' or '.join(union_classes)})"
+                else:
+                    target_str = get_qname(g, target, ns, prefix_map)
+                rows.append((on_prop, f"{' '.join(label_parts)} {target_str}"))
+
+            # Some values from
+            some_values_from = g.value(restr, OWL.someValuesFrom)
+            if some_values_from:
+                label_parts = ["some"]
+                target = some_values_from
+                union_classes = get_union_classes(g, target, ns, prefix_map)
+                if union_classes:
+                    target_str = f"({' or '.join(union_classes)})"
+                else:
+                    target_str = get_qname(g, target, ns, prefix_map)
+                rows.append((on_prop, f"{' '.join(label_parts)} {target_str}"))
+
             # Qualified cardinalities for object properties
-            qualified_card = g.value(super_cls, OWL.qualifiedCardinality)
-            min_qualified_card = g.value(super_cls, OWL.minQualifiedCardinality)
-            max_qualified_card = g.value(super_cls, OWL.maxQualifiedCardinality)
-            on_class = g.value(super_cls, OWL.onClass)
+            on_class = g.value(restr, OWL.onClass)
+            qualified_card = g.value(restr, OWL.qualifiedCardinality)
+            min_qualified_card = g.value(restr, OWL.minQualifiedCardinality)
+            max_qualified_card = g.value(restr, OWL.maxQualifiedCardinality)
             if on_prop and (qualified_card or min_qualified_card or max_qualified_card) and on_class:
                 label_parts = []
-                if qualified_card:
+                if qualified_card and on_class:
                     label_parts.append(f"exactly {qualified_card}")
-                if min_qualified_card:
+                if min_qualified_card and on_class:
                     label_parts.append(f"min {min_qualified_card}")
-                if max_qualified_card:
+                if max_qualified_card and on_class:
                     label_parts.append(f"max {max_qualified_card}")
                 if label_parts:
-                    target_qname = get_qname(g, on_class, ns, prefix_map)
-                    rows.append((prop_name, f"{' '.join(label_parts)} {target_qname}"))
+                    target = on_class
+                    union_classes = get_union_classes(g, target, ns, prefix_map)
+                    if union_classes:
+                        target_str = f"({' or '.join(union_classes)})"
+                    else:
+                        target_str = get_qname(g, target, ns, prefix_map)
+                    rows.append((on_prop, f"{' '.join(label_parts)} {target_str}"))
+
             # Qualified cardinalities for data properties
-            on_data_range = g.value(super_cls, OWL.onDataRange)
-            if on_prop and (qualified_card or min_qualified_card or max_qualified_card) and on_data_range:
+            on_data_range = g.value(restr, OWL.onDataRange)
+            if on_prop and (qualified_card or min_qualified_card or max_qualified_card):
                 label_parts = []
-                if qualified_card:
+                if qualified_card and on_data_range:
                     label_parts.append(f"exactly {qualified_card}")
-                if min_qualified_card:
+                if min_qualified_card and on_data_range:
                     label_parts.append(f"min {min_qualified_card}")
-                if max_qualified_card:
+                if max_qualified_card and on_data_range:
                     label_parts.append(f"max {max_qualified_card}")
                 if label_parts:
                     range_name = get_qname(g, on_data_range, ns, prefix_map)
-                    rows.append((prop_name, f"{' '.join(label_parts)} {range_name}"))
+                    rows.append((on_prop, f"{' '.join(label_parts)} {range_name}"))
+
             # Non-qualified cardinalities
-            card = g.value(super_cls, OWL.cardinality)
-            min_card = g.value(super_cls, OWL.minCardinality)
-            max_card = g.value(super_cls, OWL.maxCardinality)
+            card = g.value(restr, OWL.cardinality)
+            min_card = g.value(restr, OWL.minCardinality)
+            max_card = g.value(restr, OWL.maxCardinality)
             if card:
                 range_type = g.value(on_prop, RDFS.range) if on_prop else None
                 if range_type:
                     range_name = get_qname(g, range_type, ns, prefix_map)
-                    rows.append((prop_name, f"exactly {card} {range_name}"))
+                    rows.append((on_prop, f"exactly {card} {range_name}"))
                 else:
-                    rows.append((prop_name, f"exactly {card}"))
+                    rows.append((on_prop, f"exactly {card}"))
             if min_card:
                 range_type = g.value(on_prop, RDFS.range) if on_prop else None
                 if range_type:
                     range_name = get_qname(g, range_type, ns, prefix_map)
-                    rows.append((prop_name, f"min {min_card} {range_name}"))
+                    rows.append((on_prop, f"min {min_card} {range_name}"))
                 else:
-                    rows.append((prop_name, f"min {min_card}"))
+                    rows.append((on_prop, f"min {min_card}"))
             if max_card:
                 range_type = g.value(on_prop, RDFS.range) if on_prop else None
                 if range_type:
                     range_name = get_qname(g, range_type, ns, prefix_map)
-                    rows.append((prop_name, f"max {max_card} {range_name}"))
+                    rows.append((on_prop, f"max {max_card} {range_name}"))
                 else:
-                    rows.append((prop_name, f"max {max_card}"))
-            # Handle allValuesFrom and someValuesFrom
-            all_values_from = g.value(super_cls, OWL.allValuesFrom)
-            if all_values_from:
-                target_qname = get_qname(g, all_values_from, ns, prefix_map)
-                rows.append((prop_name, f"only {target_qname}"))
-            some_values_from = g.value(super_cls, OWL.someValuesFrom)
-            if some_values_from:
-                target_qname = get_qname(g, some_values_from, ns, prefix_map)
-                rows.append((prop_name, f"some {target_qname}"))
-    return [(prop, constr) for prop, constr in rows if prop is not None]
+                    rows.append((on_prop, f"max {max_card}"))
+
+    return rows
 
 def hyperlink_class(name: str, all_classes: set, ns: str):
     """Create a hyperlink only for classes in the local namespace."""

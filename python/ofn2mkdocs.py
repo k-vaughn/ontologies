@@ -2,14 +2,14 @@ import os
 import sys
 import logging
 import traceback
-from ontology_processor import process_ontology
+from ontology_processor_ofn import process_ontology
 from diagram_generator import generate_diagram
 from markdown_generator import generate_markdown, update_mkdocs_nav, generate_index
 from utils import get_qname, get_label, is_abstract, get_id
 from rdflib import Graph, RDF, XSD, URIRef, Literal
 
 # -------------------- logging --------------------
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s")
 log = logging.getLogger("ofn2mkdocs")
 
 def main():
@@ -55,13 +55,7 @@ def main():
             "non_pattern_classes": set()
         }
         try:
-            # Process ontology
-            ontology_info[ofn_path] = {
-               "title": "Untitled Ontology",
-                "description": "",
-                "patterns": set(),
-                "non_pattern_classes": set()
-            }
+            # Process ontology and generate TTL
             g, ns, prefix_map, classes, local_classes, prop_map = process_ontology(ofn_path, errors, ontology_info[ofn_path])
             if g is None:
                 continue

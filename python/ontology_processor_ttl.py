@@ -15,10 +15,10 @@ def process_ontology(ttl_path: str, errors: list, ontology_info) -> tuple:
         g.parse(ttl_path, format='turtle')
         log.info("Loaded ontology %s with %d triples", ttl_path, len(g))
         # Debug RuleMaker triples
-        rulemaker_uri = URIRef("https://isotc204.org/ontologies/its/regulation#RuleMaker")
-        log.info("Checking triples for RuleMaker (%s):", rulemaker_uri)
-        for s, p, o in g.triples((rulemaker_uri, None, None)):
-            log.info("  Triple: (%s, %s, %s)", s, p, o)
+#        rulemaker_uri = URIRef("https://isotc204.org/ontologies/its/regulation#RuleMaker")
+#        log.info("Checking triples for RuleMaker (%s):", rulemaker_uri)
+#        for s, p, o in g.triples((rulemaker_uri, None, None)):
+#            log.info("  Triple: (%s, %s, %s)", s, p, o)
         if len(g) == 0:
             raise ValueError("RDF graph is empty after loading ontology")
     except Exception as e:
@@ -35,13 +35,12 @@ def process_ontology(ttl_path: str, errors: list, ontology_info) -> tuple:
     if not ns:
         log.warning("No ontology IRI found in TTL file %s; using default namespace", ttl_path)
         ns = "https://isotc204.org/ontologies/its/regulation#"
-    log.info("Using default namespace for %s: %s", ttl_path, ns)
-
+    log.info("Using namespace %s for ontology %s", ns, ttl_path)
     # Extract ontology metadata and update ontology_info
     dc_title = get_ontology_metadata(g, ns, DC.title) or "Untitled Ontology"
-    dcterms_description = get_ontology_metadata(g, ns, DCTERMS.description) or ""
+    dc_description = get_ontology_metadata(g, ns, DC.description) or ""
     ontology_info["title"] = dc_title
-    ontology_info["description"] = dcterms_description
+    ontology_info["description"] = dc_description
     ontology_info["patterns"] = set()
     ontology_info["non_pattern_classes"] = set()
 
@@ -49,15 +48,17 @@ def process_ontology(ttl_path: str, errors: list, ontology_info) -> tuple:
     prefix_map = {str(uri): f"{prefix}:" for prefix, uri in g.namespaces()}
     if ns not in prefix_map:
         prefix_map[ns] = ":"
-    log.info("Prefixes for %s:", ttl_path)
+    log.debug("Prefixes for %s:", ttl_path)
     for uri, prefix in prefix_map.items():
-        log.info("  %s → %s", prefix, uri)
+        log.debug("  %s → %s", prefix, uri)
 
     # Extract classes
     classes = set(g.subjects(RDF.type, OWL.Class)) - {OWL.Thing}
-    log.info("Found %d classes in ontology %s:", len(classes), ttl_path)
+    # Filter out non-HTTP classes (e.g., unions)
+    classes = {cls for cls in classes if str(cls).startswith("http")}
+    log.debug("Found %d classes in ontology %s:", len(classes), ttl_path)
     for cls in classes:
-        log.info("  %s", str(cls))
+        log.debug("  %s", str(cls))
 
     # Filter classes by namespace
     local_classes = [cls for cls in classes if str(cls).startswith(ns)]

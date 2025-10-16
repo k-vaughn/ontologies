@@ -150,7 +150,7 @@ def generate_markdown(g: Graph, cls: URIRef, cls_name: str, global_patterns: dic
         os.makedirs(classes_dir, exist_ok=True)
         with open(filename, "w", encoding="utf-8") as f:
             f.write(content)
-        log.info("Generated Markdown file: %s", filename)
+        log.debug("Generated Markdown file: %s", filename)
     except Exception as e:
         error_msg = f"Error writing Markdown for {cls_name} from {file_path}: {str(e)}\n{traceback.format_exc()}"
         errors.append(error_msg)

@@ -311,7 +311,7 @@ def generate_diagram(g: Graph, cls: URIRef, cls_name: str, cls_id: str, ns: str,
             dot.edge(cls_id, target_id, label=label, style=style, arrowhead="normal")
 
     # Save DOT file and render SVG/PNG
-    log.info("Saving diagram for %s", cls_name)
+    log.debug("Saving diagram for %s", cls_name)
     try:
         dot_file = os.path.join(diagrams_dir, f"{cls_name}")
         dot.save(dot_file)

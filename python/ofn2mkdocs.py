@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import traceback
-from ontology_processor import process_ontology
+from ontology_processor_ofn import process_ontology
 from diagram_generator import generate_diagram
 from markdown_generator import generate_markdown, update_mkdocs_nav, generate_index
 from utils import get_qname, get_label, is_abstract, get_id
@@ -33,12 +33,6 @@ def main():
 
     # Find all .ofn files in docs directory
     ofn_files = [os.path.join(docs_dir, f) for f in os.listdir(docs_dir) if f.lower().endswith('.ofn')]
-    
-    # Check for .ttl files and warn if found
-    ttl_files = [f for f in os.listdir(docs_dir) if f.lower().endswith('.ttl')]
-    if ttl_files:
-        log.warning("Found .ttl files in docs directory, which will be ignored: %s", ttl_files)
-    
     if not ofn_files:
         print("No .ofn files found in docs/")
         sys.exit(0)

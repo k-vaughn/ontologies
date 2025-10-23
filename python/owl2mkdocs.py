@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import traceback
+from collections import defaultdict
 from ontology_processor_owl import process_ontology
 from diagram_generator import generate_diagram
 from markdown_generator import generate_markdown, update_mkdocs_nav, generate_index
@@ -45,22 +46,27 @@ def main():
     ontology_info = {}
     errors = []
     processed_count = 0
+    ns_to_ontology = {}
+    class_to_onts = defaultdict(list)
 
     # Process each OWL file
     for owl_path in sorted(owl_files):
+        ontology_name = os.path.splitext(os.path.basename(owl_path))[0]
         log.info("########## Processing ontology file: %s", owl_path)
         # Initialize ontology_info for this file
         ontology_info[owl_path] = {
             "title": "Untitled Ontology",
             "description": "",
             "patterns": set(),
-            "non_pattern_classes": set()
+            "non_pattern_classes": set(),
+            "ontology_name": ontology_name
         }
         try:
             # Process ontology
             g, ns, prefix_map, classes, local_classes, prop_map = process_ontology(owl_path, errors, ontology_info[owl_path])
             if g is None:
                 continue
+            ns_to_ontology[ns] = ontology_name
 
             # Update global collections
             for cls in classes:
@@ -68,6 +74,8 @@ def main():
                 abstract_map[cls_qname] = is_abstract(cls, g, ns)
                 if cls_qname != 'ITSThing':
                     global_all_classes.add(cls_qname)
+                if ':' not in cls_qname:
+                    class_to_onts[cls_qname].append(ontology_name)
 
             for cls in local_classes:
                 cls_name = get_label(g, cls)
@@ -79,10 +87,11 @@ def main():
                     pattern_name = str(pattern_literal)
                     if pattern_name not in global_patterns:
                         global_patterns[pattern_name] = {"classes": []}
-                    global_patterns[pattern_name]["classes"].append(cls_name)
+                    global_patterns[pattern_name]["classes"].append((cls_name, ontology_name))
                     ontology_info[owl_path]["patterns"].add(pattern_name)
                 else:
                     ontology_info[owl_path]["non_pattern_classes"].add(cls_name)
+                    class_to_onts[cls_name].append(ontology_name)
 
             # Process classes for diagrams and Markdown
             for cls in sorted(local_classes, key=lambda u: get_label(g, u).lower()):
@@ -94,10 +103,10 @@ def main():
 
                 try:
                     # Generate diagram
-                    generate_diagram(g, cls, cls_name, cls_id, ns, global_all_classes, abstract_map, owl_path, errors, prefix_map)
+                    generate_diagram(g, cls, cls_name, cls_id, ns, global_all_classes, abstract_map, owl_path, errors, prefix_map, ontology_name, ns_to_ontology)
 
                     # Generate Markdown
-                    generate_markdown(g, cls, cls_name, global_patterns, global_all_classes, ns, owl_path, errors, prefix_map, prop_map)
+                    generate_markdown(g, cls, cls_name, global_patterns, global_all_classes, ns, owl_path, errors, prefix_map, prop_map, ontology_name, ns_to_ontology, class_to_onts)
                     processed_count += 1
 
                 except Exception as e:
@@ -111,17 +120,17 @@ def main():
             log.error(error_msg)
             continue
 
-        # Update mkdocs.yml navigation
-        try:
-            update_mkdocs_nav(mkdocs_path, global_patterns, global_all_classes, errors)
-        except Exception as e:
-            error_msg = f"Error updating mkdocs.yml: {str(e)}\n{traceback.format_exc()}"
-            errors.append(error_msg)
-            log.error(error_msg)
+    # Update mkdocs.yml navigation
+    try:
+        update_mkdocs_nav(mkdocs_path, global_patterns, global_all_classes, errors, class_to_onts, ontology_info, owl_files)
+    except Exception as e:
+        error_msg = f"Error updating mkdocs.yml: {str(e)}\n{traceback.format_exc()}"
+        errors.append(error_msg)
+        log.error(error_msg)
 
     # Generate index.md
     try:
-        generate_index(docs_dir, owl_files, ontology_info, global_patterns, errors)
+        generate_index(docs_dir, owl_files, ontology_info, global_patterns, errors, class_to_onts)
     except Exception as e:
         error_msg = f"Error generating index.md: {str(e)}\n{traceback.format_exc()}"
         errors.append(error_msg)

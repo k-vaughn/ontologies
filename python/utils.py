@@ -1,7 +1,7 @@
 import re
 import logging
 from typing import Optional, Iterable, Tuple, List
-from rdflib import Graph, RDF, RDFS, OWL, URIRef, Literal
+from rdflib import Graph, RDF, RDFS, OWL, URIRef, Literal, BNode
 from rdflib.namespace import DC, DCTERMS, SKOS
 
 log = logging.getLogger("ofn2mkdocs")
@@ -18,7 +18,7 @@ def get_prefix_named_pairs(ontology_doc, ns: str):
     handling different return shapes of as_prefixes() across funowl versions."""
     pd = getattr(ontology_doc, "prefixDeclarations", None)
     if not pd:
-        log.debug("No prefix declarations found, using default namespace: %s", ns)
+#        log.debug("No prefix declarations found, using default namespace: %s", ns)
         return [{"prefix": "", "uri": ns}]
 
     ap = pd.as_prefixes()
@@ -31,7 +31,7 @@ def get_prefix_named_pairs(ontology_doc, ns: str):
             if isinstance(item, tuple) and len(item) == 2:
                 k, v = item
                 out.append({"prefix": str(k), "uri": str(v)})
-                log.debug("      %s %s", k, v)
+#                log.debug("      %s %s", k, v)
                 continue
 
             p = (
@@ -50,49 +50,46 @@ def get_prefix_named_pairs(ontology_doc, ns: str):
     if not any(d["uri"] == ns for d in out):
         out.append({"prefix": "", "uri": ns})
 
-    log.debug("Prefixes extracted: %s", out)
+#    log.debug("Prefixes extracted: %s", out)
     return out
 
-def get_qname(g: Graph, uri: URIRef, ns: str, prefix_map: dict):
+def get_qname(g: Graph, uri, ns: str, prefix_map: dict):
     if uri is None or not str(uri).strip():
         log.error("Invalid URI provided to get_qname: %s", uri)
         return "INVALID_URI"
     s = str(uri)
     norm = _norm_base(s)
-    log.debug("Processing URI: %s, normalized: %s, namespace: %s", s, norm, ns)
+#    log.debug("Processing URI: %s, normalized: %s, namespace: %s", s, norm, ns)
     if norm == _norm_base(ns) or s.startswith(ns):
         local = s[len(_norm_base(ns)):]
         if local.startswith(('/', '#', '_')):
             local = local[1:]
         qname = local.rstrip()
-        log.debug("Matched default namespace, returning QName: %s", qname)
+#        log.debug("Matched default namespace, returning QName: %s", qname)
         return qname
     if not prefix_map:
         log.warning("Empty prefix map for URI: %s, namespace: %s", s, ns)
         return s
     for base in sorted(prefix_map.keys(), key=len, reverse=True):
         base_norm = _norm_base(base)
-        log.debug("Checking prefix base: %s, normalized: %s", base, base_norm)
+#        log.debug("Checking prefix base: %s, normalized: %s", base, base_norm)
         if s == base or s.startswith(base) or norm == base_norm or norm.startswith(base_norm):
             local = s[len(base):]
             if local.startswith(('/', '#', '_')):
                 local = local[1:]
             local = local.rstrip()
             if not local:
-                log.debug("No local part after prefix %s, using base URI", base)
+#                log.debug("No local part after prefix %s, using base URI", base)
                 local = s
             if prefix_map[base] == ":":
                 qname = local
             else:
                 qname = prefix_map[base] + ":" + local
-#            original_level = log.getEffectiveLevel()
-#            log.setLevel(logging.DEBUG)
-#            log.debug("Matched prefix %s, returning QName: %s", base, qname)
-#            log.setLevel(original_level)
             return qname
-    log.warning("No prefix found for URI: %s, namespace: %s, prefix_map:", s, ns)
-    for prefix in prefix_map:
-        log.debug("  %s", str(prefix))
+    if not s.startswith('N'):
+        log.warning("No prefix found for URI: %s, namespace: %s, prefix_map:", s, ns)
+#    for prefix in prefix_map:
+#        log.debug("  %s", str(prefix))
     return s
 
 def get_label(g: Graph, c: URIRef) -> str:
@@ -120,7 +117,6 @@ def get_ontology_metadata(g: Graph, ns: str, predicate: URIRef) -> Optional[str]
         for _, _, lit in g.triples((subj, predicate, None)):
             if isinstance(lit, Literal):
                 return str(lit)
-    # Try the ontology IRI directly
     ontology_iri = URIRef(ns.rstrip('#/'))
     for _, _, lit in g.triples((ontology_iri, predicate, None)):
         if isinstance(lit, Literal):
@@ -141,20 +137,55 @@ def iter_annotations(g: Graph, subj: URIRef, ns: str, prefix_map: dict) -> Itera
         if isinstance(o, Literal):
             yield (get_qname(g, p, ns, prefix_map), str(o))
 
-def get_union_classes(g: Graph, union: URIRef, ns: str, prefix_map: dict) -> List[str]:
-    classes = []
-    current = g.value(union, OWL.unionOf)
+def collect_list(g: Graph, head: URIRef) -> List:
+    """Collect RDF list into Python list."""
+    result = []
+    current = head
     while current and current != RDF.nil:
         first = g.value(current, RDF.first)
         if first:
-            classes.append(get_qname(g, first, ns, prefix_map))
+            result.append(first)
         current = g.value(current, RDF.rest)
-    return sorted(classes)
+    return result
+
+def get_leaf_classes(g: Graph, expr, ns: str, prefix_map: dict) -> List[URIRef]:
+    """Get all leaf classes from a class expression."""
+    classes = []
+    if isinstance(expr, URIRef):
+        classes.append(expr)
+    else:
+        union = g.value(expr, OWL.unionOf)
+        if union and union != RDF.nil:
+            classes.extend(collect_list(g, union))
+        inter = g.value(expr, OWL.intersectionOf)
+        if inter and inter != RDF.nil:
+            classes.extend(collect_list(g, inter))
+        comp = g.value(expr, OWL.complementOf)
+        if comp:
+            classes.extend(get_leaf_classes(g, comp, ns, prefix_map))
+    return classes
+
+def get_class_expression_str(g: Graph, expr, ns: str, prefix_map: dict) -> str:
+    """Generate a readable string for class expressions, similar to Protégé."""
+    if isinstance(expr, URIRef):
+        return get_qname(g, expr, ns, prefix_map)
+    union = g.value(expr, OWL.unionOf)
+    if union and union != RDF.nil:
+        members = collect_list(g, union)
+        return f"({' or '.join(get_class_expression_str(g, m, ns, prefix_map) for m in sorted(members, key=str))})"
+    inter = g.value(expr, OWL.intersectionOf)
+    if inter and inter != RDF.nil:
+        members = collect_list(g, inter)
+        return f"({' and '.join(get_class_expression_str(g, m, ns, prefix_map) for m in sorted(members, key=str))})"
+    comp = g.value(expr, OWL.complementOf)
+    if comp:
+        return f"(not {get_class_expression_str(g, comp, ns, prefix_map)})"
+    return str(expr)
 
 def class_restrictions(g: Graph, c: URIRef, ns: str, prefix_map: dict) -> List[Tuple[str, str]]:
     """Extract OWL restrictions and subClassOf constraints for Markdown output."""
     if c is None:
-      return []
+        return []
 
     rows = []
     for super_cls in g.objects(c, RDFS.subClassOf):
@@ -163,107 +194,86 @@ def class_restrictions(g: Graph, c: URIRef, ns: str, prefix_map: dict) -> List[T
             rows.append(("subClassOf", super_qname))
         elif (super_cls, RDF.type, OWL.Restriction) in g:
             restr = super_cls
-            on_prop = get_qname(g, g.value(restr, OWL.onProperty), ns, prefix_map)
+            prop = g.value(restr, OWL.onProperty)
+            prop_name, is_inverse, base_prop = get_property_info(g, prop, ns, prefix_map)
 
-            # All values from
             all_values_from = g.value(restr, OWL.allValuesFrom)
             if all_values_from:
                 label_parts = ["only"]
-                target = all_values_from
-                union_classes = get_union_classes(g, target, ns, prefix_map)
-                if union_classes:
-                    target_str = f"({' or '.join(union_classes)})"
-                else:
-                    target_str = get_qname(g, target, ns, prefix_map)
-                rows.append((on_prop, f"{' '.join(label_parts)} {target_str}"))
+                target_str = get_class_expression_str(g, all_values_from, ns, prefix_map)
+                rows.append((prop_name, f"{' '.join(label_parts)} {target_str}"))
 
-            # Some values from
             some_values_from = g.value(restr, OWL.someValuesFrom)
             if some_values_from:
                 label_parts = ["some"]
-                target = some_values_from
-                union_classes = get_union_classes(g, target, ns, prefix_map)
-                if union_classes:
-                    target_str = f"({' or '.join(union_classes)})"
-                else:
-                    target_str = get_qname(g, target, ns, prefix_map)
-                rows.append((on_prop, f"{' '.join(label_parts)} {target_str}"))
+                target_str = get_class_expression_str(g, some_values_from, ns, prefix_map)
+                rows.append((prop_name, f"{' '.join(label_parts)} {target_str}"))
 
-            # Qualified cardinalities for object properties
             on_class = g.value(restr, OWL.onClass)
             qualified_card = g.value(restr, OWL.qualifiedCardinality)
             min_qualified_card = g.value(restr, OWL.minQualifiedCardinality)
             max_qualified_card = g.value(restr, OWL.maxQualifiedCardinality)
-            if on_prop and (qualified_card or min_qualified_card or max_qualified_card) and on_class:
+            if prop_name and (qualified_card is not None or min_qualified_card is not None or max_qualified_card is not None) and on_class:
                 label_parts = []
-                if qualified_card and on_class:
+                if qualified_card is not None:
                     label_parts.append(f"exactly {qualified_card}")
-                if min_qualified_card and on_class:
+                if min_qualified_card is not None:
                     label_parts.append(f"min {min_qualified_card}")
-                if max_qualified_card and on_class:
+                if max_qualified_card is not None:
                     label_parts.append(f"max {max_qualified_card}")
                 if label_parts:
-                    target = on_class
-                    union_classes = get_union_classes(g, target, ns, prefix_map)
-                    if union_classes:
-                        target_str = f"({' or '.join(union_classes)})"
-                    else:
-                        target_str = get_qname(g, target, ns, prefix_map)
-                    rows.append((on_prop, f"{' '.join(label_parts)} {target_str}"))
+                    target_str = get_class_expression_str(g, on_class, ns, prefix_map)
+                    rows.append((prop_name, f"{' '.join(label_parts)} {target_str}"))
 
-            # Qualified cardinalities for data properties
             on_data_range = g.value(restr, OWL.onDataRange)
-            if on_prop and (qualified_card or min_qualified_card or max_qualified_card):
+            if prop_name and (qualified_card or min_qualified_card or max_qualified_card) and on_data_range:
                 label_parts = []
-                if qualified_card and on_data_range:
+                if qualified_card is not None:
                     label_parts.append(f"exactly {qualified_card}")
-                if min_qualified_card and on_data_range:
+                if min_qualified_card is not None:
                     label_parts.append(f"min {min_qualified_card}")
-                if max_qualified_card and on_data_range:
+                if max_qualified_card is not None:
                     label_parts.append(f"max {max_qualified_card}")
                 if label_parts:
-                    range_name = get_qname(g, on_data_range, ns, prefix_map)
-                    rows.append((on_prop, f"{' '.join(label_parts)} {range_name}"))
+                    range_name = get_class_expression_str(g, on_data_range, ns, prefix_map)
+                    rows.append((prop_name, f"{' '.join(label_parts)} {range_name}"))
 
-            # Non-qualified cardinalities
             card = g.value(restr, OWL.cardinality)
             min_card = g.value(restr, OWL.minCardinality)
             max_card = g.value(restr, OWL.maxCardinality)
-            if card:
-                range_type = g.value(on_prop, RDFS.range) if on_prop else None
+            if card is not None:
+                range_type = g.value(base_prop, RDFS.range) if base_prop else None
                 if range_type:
-                    range_name = get_qname(g, range_type, ns, prefix_map)
-                    rows.append((on_prop, f"exactly {card} {range_name}"))
+                    range_name = get_class_expression_str(g, range_type, ns, prefix_map)
+                    rows.append((prop_name, f"exactly {card} {range_name}"))
                 else:
-                    rows.append((on_prop, f"exactly {card}"))
-            if min_card:
-                range_type = g.value(on_prop, RDFS.range) if on_prop else None
+                    rows.append((prop_name, f"exactly {card} owl::Thing"))
+            if min_card is not None:
+                range_type = g.value(base_prop, RDFS.range) if base_prop else None
                 if range_type:
-                    range_name = get_qname(g, range_type, ns, prefix_map)
-                    rows.append((on_prop, f"min {min_card} {range_name}"))
+                    range_name = get_class_expression_str(g, range_type, ns, prefix_map)
+                    rows.append((prop_name, f"min {min_card} {range_name}"))
                 else:
-                    rows.append((on_prop, f"min {min_card}"))
-            if max_card:
-                range_type = g.value(on_prop, RDFS.range) if on_prop else None
+                    rows.append((prop_name, f"min {min_card} owl::Thing"))
+            if max_card is not None:
+                range_type = g.value(base_prop, RDFS.range) if base_prop else None
                 if range_type:
-                    range_name = get_qname(g, range_type, ns, prefix_map)
-                    rows.append((on_prop, f"max {max_card} {range_name}"))
+                    range_name = get_class_expression_str(g, range_type, ns, prefix_map)
+                    rows.append((prop_name, f"max {max_card} {range_name}"))
                 else:
-                    rows.append((on_prop, f"max {max_card}"))
+                    rows.append((prop_name, f"max {max_card} owl::Thing"))
 
     return rows
 
 def hyperlink_class(name: str, all_classes: set, ns: str):
     """Create a hyperlink only for classes in the local namespace."""
-    if ':' not in name and name in all_classes:  # Local class without prefix
+    if ':' not in name and name in all_classes:
         return f"[{name}]({name}.md)"
     return name
 
 def fmt_title(name: str, all_classes: set, ns: str, abstract_map: dict) -> str:
     """Format class title for Graphviz, with URL attribute for local classes."""
-    is_local = ':' not in name and name in all_classes
-#    name = name.replace(":", "::")
-    display_name = f"<I>{name}</I>" if abstract_map.get(name, False) else name
+    display_name = f"<I>{insert_spaces(name)}</I>" if abstract_map.get(name, False) else insert_spaces(name)
     return display_name
 
 def is_abstract(cls, g, ns):
@@ -297,6 +307,21 @@ def get_all_class_superclasses(cls, g):
         all_supers.update(get_all_class_superclasses(sup, g))
     return all_supers
 
+def get_property_info(g: Graph, prop: URIRef, ns: str, prefix_map: dict) -> tuple:
+    """Get property name, handling inverses."""
+    if not prop:
+        return None, False, None
+    inverse_of = g.value(prop, OWL.inverseOf)
+    if inverse_of:
+        base_prop = inverse_of
+        is_inverse = True
+        prop_name = f"inverse {get_qname(g, base_prop, ns, prefix_map)}"
+    else:
+        base_prop = prop
+        is_inverse = False
+        prop_name = get_qname(g, base_prop, ns, prefix_map)
+    return prop_name, is_inverse, base_prop
+
 def is_refined_property(g: Graph, cls: URIRef, prop: URIRef, restriction: URIRef) -> bool:
     """Check if a property restriction in cls refines an inherited restriction."""
     if cls is None or prop is None or restriction is None:
@@ -327,3 +352,10 @@ def insert_spaces(name: str) -> str:
     name = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1 \2', name)
     name = re.sub(r'([a-z\d])([A-Z])', r'\1 \2', name)
     return name
+
+def get_ontology_for_uri(uri_str: str, ns_to_ontology: dict) -> str:
+    norm_uri = _norm_base(uri_str)
+    for ont_ns, ont_name in sorted(ns_to_ontology.items(), key=lambda x: len(x[0]), reverse=True):
+        if norm_uri.startswith(_norm_base(ont_ns)):
+            return ont_name
+    return None

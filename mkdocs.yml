@@ -83,7 +83,3 @@ extra:
     highlight: true
   hide:
     - title
-  version:
-    provider: mike
-    alias: true
-    default: latest

@@ -30,6 +30,7 @@ jobs:
           pip install mkdocs-git-revision-date-localized-plugin
           pip install mkdocs-to-pdf
           pip install mike pymdown-extensions mkdocs-mermaid2-plugin
+          pip install mkdocs-multirepo-plugin
           npm install -g @mermaid-js/mermaid-cli
 
       # Step 4: Get release tag, fall back to current date and time if no tag exists

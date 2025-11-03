@@ -1,315 +1,315 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/ontology_formats/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/ontology_formats/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/Alert/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/Alert/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/Footpath/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/Footpath/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/FootpathLane/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/FootpathLane/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/FootpathLink/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/FootpathLink/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/FootpathNetwork/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/FootpathNetwork/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/FootpathSection/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/FootpathSection/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/FootpathSegment/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/FootpathSegment/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/GroupOfLines/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/GroupOfLines/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/ITSPattern/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/ITSPattern/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/ITSThing/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/ITSThing/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/Junction/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/Junction/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityLane/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityLane/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityLink/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityLink/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityNetwork/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityNetwork/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityNetworkPattern/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityNetworkPattern/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityPath/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityPath/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityPathSection/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityPathSection/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityPathSegment/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/MicromobilityPathSegment/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/NetworkElement/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/NetworkElement/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/PedestrianNetworkPattern/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/PedestrianNetworkPattern/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/PointOnRoute/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/PointOnRoute/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/PublicTransportElement/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/PublicTransportElement/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/PublicTransportLine/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/PublicTransportLine/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/PublicTransportRoute/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/PublicTransportRoute/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/PublicTransportSystem/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/PublicTransportSystem/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/PublicTransportSystemPattern/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/PublicTransportSystemPattern/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/RailCorridor/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/RailCorridor/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/RailNetwork/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/RailNetwork/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/RailNetworkPattern/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/RailNetworkPattern/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/RailSection/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/RailSection/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/Road/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/Road/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/RoadLane/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/RoadLane/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/RoadLink/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/RoadLink/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/RoadLinkUserType/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/RoadLinkUserType/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/RoadNetwork/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/RoadNetwork/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/RoadNetworkPattern/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/RoadNetworkPattern/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/RoadSection/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/RoadSection/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/RoadSegment/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/RoadSegment/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/RoutePoint/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/RoutePoint/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/ScheduledCode/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/ScheduledCode/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TrackLink/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TrackLink/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TrackSegment/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TrackSegment/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TransportAlert/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TransportAlert/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TransportAlertPattern/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TransportAlertPattern/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TransportNetwork/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TransportNetwork/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TransportNetworkPattern/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TransportNetworkPattern/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TransportNode/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TransportNode/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TravelCorridor/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TravelCorridor/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TravelCorridorLink/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TravelCorridorLink/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TravelCorridorPattern/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TravelCorridorPattern/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TravelCorridorSegment/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TravelCorridorSegment/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TravelledWay/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TravelledWay/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TravelledWayLane/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TravelledWayLane/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TravelledWayLink/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TravelledWayLink/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TravelledWaySection/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TravelledWaySection/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/city-data-model/part-3/v1-0-0/classes/TravelledWaySegment/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/city-data-model/part-3/v1-0-0/classes/TravelledWaySegment/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/AccessControlDevice/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/AccessControlDevice/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/ChannelizationDevice/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/ChannelizationDevice/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/LegalBasis/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/LegalBasis/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/PavementMarking/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/PavementMarking/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/PavementTreatment/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/PavementTreatment/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/RoadSign/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/RoadSign/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/RoadSurfaceFeature/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/RoadSurfaceFeature/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/RuleMaker/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/RuleMaker/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/Signal/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/Signal/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/TrafficControlDevice/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/TrafficControlDevice/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/TrafficRegulation/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/TrafficRegulation/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/TrafficRegulationOrder/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/TrafficRegulationOrder/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/TrafficSignal/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/TrafficSignal/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/TrafficSignalDevice/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/TrafficSignalDevice/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/TroPattern/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/TroPattern/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/TroThing/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/TroThing/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/Validity/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/Validity/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
     <url>
-         <loc>https://github.com/k-vaughn/ontologies/its/traffic-regulations/v0-0-1/classes/WarningBeacon/</loc>
+         <loc>https://k-vaughn.github.io/ontologies/its/traffic-regulations/v0-0-1/classes/WarningBeacon/</loc>
          <lastmod>2025-11-03</lastmod>
     </url>
 </urlset>

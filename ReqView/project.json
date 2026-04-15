@@ -1,0 +1,19 @@
+{
+  "id": "Ontologies",
+  "description": "Traceability for ITS ontology concepts",
+  "documents": [
+    "its-regulation.json",
+    "its-time.json"
+  ],
+  "traceability": {
+    "reference": {
+      "name": "Reference",
+      "source": "References",
+      "target": "Referenced by"
+    }
+  },
+  "metadata": {
+    "format": "2.20",
+    "saveHistory": true
+  }
+}

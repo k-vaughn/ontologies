@@ -1,0 +1,59 @@
+{
+  "id": "its-regulation",
+  "guid": "71fbd2fb-40d6-43e6-a4c1-09aff24138b0",
+  "name": "Regulation",
+  "lastId": 1,
+  "createdOn": "2026-04-14T21:28:07.772Z",
+  "createdBy": {
+    "name": "Ken Vaughn",
+    "email": "kvaughn@trevilon.com",
+    "company": "Trevilon"
+  },
+  "lastChangedOn": "2026-04-14T21:28:08.242Z",
+  "lastChangedBy": {
+    "name": "Ken Vaughn",
+    "email": "kvaughn@trevilon.com",
+    "company": "Trevilon"
+  },
+  "data": [
+    {
+      "id": "1",
+      "guid": "1430db39-68ff-49a6-8aa4-439aa435f8ee",
+      "history": [
+        {
+          "affectedNodeId": "#",
+          "changedBy": {
+            "company": "Trevilon",
+            "email": "kvaughn@trevilon.com",
+            "name": "Ken Vaughn"
+          },
+          "changedOn": "2026-04-14T21:28:08.242Z",
+          "docId": "its-regulation",
+          "structureAction": "Create"
+        }
+      ]
+    }
+  ],
+  "attributes": {
+  },
+  "templateColumns": {
+  },
+  "views": {
+    "Primary": {
+      "columns": [
+        {
+          "columnId": "id",
+          "width": 65
+        },
+        {
+          "columnId": "description",
+          "width": 500
+        }
+      ],
+      "default": true
+    }
+  },
+  "metadata": {
+    "format": "2.20"
+  }
+}

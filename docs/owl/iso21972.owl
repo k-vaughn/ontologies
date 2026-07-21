@@ -10,17 +10,18 @@
     <Prefix name="cc" IRI="http://creativecommons.org/ns#"/>
     <Prefix name="dc" IRI="http://purl.org/dc/elements/1.1/"/>
     <Prefix name="geo" IRI="http://www.geonames.org/"/>
-    <Prefix name="geosparql" IRI="http://www.opengis.net/ont/geosparql#"/>
+    <Prefix name="gis" IRI="http://http://www.opengis.net/ont/geosparql#"/>
     <Prefix name="i72" IRI="http://ontology.eil.utoronto.ca/ISO21972/iso21972#"/>
     <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
     <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
     <Prefix name="sch" IRI="http://schema.org/"/>
     <Prefix name="xml" IRI="http://www.w3.org/XML/1998/namespace"/>
     <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
+    <Prefix name="Time" IRI="http://ontology.eil.utoronto.ca/5087/1/Time/"/>
     <Prefix name="adms" IRI="http://www.w3.org/ns/adms#"/>
     <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
-    <Prefix name="time" IRI="http://www.w3.org/2006/time#"/>
     <Prefix name="vann" IRI="http://purl.org/vocab/vann/"/>
+    <Prefix name="otime" IRI="http://www.w3.org/2006/time#"/>
     <Import>http://ontology.eil.utoronto.ca/5087/1/Time.owl</Import>
     <Annotation>
         <AnnotationProperty abbreviatedIRI="cc:license"/>
@@ -32,7 +33,9 @@
     </Annotation>
     <Annotation>
         <AnnotationProperty abbreviatedIRI="dc:description"/>
-        <Literal xml:lang="en">Draft version of the ISO 21972 Ontology.
+        <Literal xml:lang="en">**Archived import of iso21972.owl on 13-Jan-2021**
+
+Draft version of the ISO 21972 Ontology.
 
 Includes a subset of the GCI Foundation ontology by:
 
@@ -63,31 +66,9 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         <Literal xml:lang="en">0.1 8 November 2019</Literal>
     </Annotation>
     <Annotation>
-        <AnnotationProperty abbreviatedIRI="owl:versionInfo"/>
-        <Literal xml:lang="en">8 March 2022:
- - added Difference_Quantity and Sum_Quantity
-
-18 November 2021:
-  - replaced w3c time.rdf with ontology.eil.utoronto.ca/5087/1/Time.owl due to parse errors
-
-12 Februrary 2021:
-  - Created Geometry as subclass of gis:Geometry in order to specify properties directly
-  - Modified Feature (subclass of gis:Feature) to add properties, and remove it as a subclass of Polygon
-  - added asWKT as sub property of gis:asWKT, made if functional
-  - added hasGeometry as sub property of gis:hasGeometry, made if functional
-  - change object property value to be functional
-
-21January2021:
-  - added OM v2 properties: hasUnit, hasValue, hasNumericalValue
-     but keeping the old properties for dual use at this time</Literal>
-    </Annotation>
-    <Annotation>
         <AnnotationProperty abbreviatedIRI="adms:relatedDocumentation"/>
         <Literal>ISO21972</Literal>
     </Annotation>
-    <Declaration>
-        <Class abbreviatedIRI="gis:Geometry"/>
-    </Declaration>
     <Declaration>
         <Class abbreviatedIRI="gis:Polygon"/>
     </Declaration>
@@ -132,9 +113,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     </Declaration>
     <Declaration>
         <Class IRI="#Fixed_zero_point"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#Geometry"/>
     </Declaration>
     <Declaration>
         <Class IRI="#ISO21972Thing"/>
@@ -233,9 +211,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         <Class IRI="#System_of_units"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#Unit"/>
-    </Declaration>
-    <Declaration>
         <Class IRI="#Unit_division"/>
     </Declaration>
     <Declaration>
@@ -263,10 +238,7 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         <Class IRI="http://www.w3.org/2003/01/geo/wgs84_pos#Feature"/>
     </Declaration>
     <Declaration>
-        <Class abbreviatedIRI="time:DateTimeInterval"/>
-    </Declaration>
-    <Declaration>
-        <ObjectProperty abbreviatedIRI="gis:hasGeometry"/>
+        <Class abbreviatedIRI="otime:DateTimeInterval"/>
     </Declaration>
     <Declaration>
         <ObjectProperty IRI="#base"/>
@@ -279,9 +251,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     </Declaration>
     <Declaration>
         <ObjectProperty IRI="#cardinality_of"/>
-    </Declaration>
-    <Declaration>
-        <ObjectProperty IRI="#commonlyHasUnit"/>
     </Declaration>
     <Declaration>
         <ObjectProperty IRI="#defined_by"/>
@@ -309,27 +278,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     </Declaration>
     <Declaration>
         <ObjectProperty IRI="#for_time_interval"/>
-    </Declaration>
-    <Declaration>
-        <ObjectProperty IRI="#hasBase"/>
-    </Declaration>
-    <Declaration>
-        <ObjectProperty IRI="#hasDenominator"/>
-    </Declaration>
-    <Declaration>
-        <ObjectProperty IRI="#hasGeometry"/>
-    </Declaration>
-    <Declaration>
-        <ObjectProperty IRI="#hasNumerator"/>
-    </Declaration>
-    <Declaration>
-        <ObjectProperty IRI="#hasPhenomenon"/>
-    </Declaration>
-    <Declaration>
-        <ObjectProperty IRI="#hasTerm1"/>
-    </Declaration>
-    <Declaration>
-        <ObjectProperty IRI="#hasTerm2"/>
     </Declaration>
     <Declaration>
         <ObjectProperty IRI="#hasUnit"/>
@@ -407,9 +355,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         <ObjectProperty IRI="#zero_element"/>
     </Declaration>
     <Declaration>
-        <DataProperty abbreviatedIRI="gis:asWKT"/>
-    </Declaration>
-    <Declaration>
         <DataProperty IRI="#exponent"/>
     </Declaration>
     <Declaration>
@@ -422,7 +367,7 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         <DataProperty IRI="#has_Name"/>
     </Declaration>
     <Declaration>
-        <DataProperty IRI="#i72DataProperty"/>
+        <DataProperty IRI="#iso21972DataProperties"/>
     </Declaration>
     <Declaration>
         <DataProperty IRI="#numerical_value"/>
@@ -602,10 +547,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         </ObjectIntersectionOf>
     </EquivalentClasses>
     <SubClassOf>
-        <Class abbreviatedIRI="gis:Geometry"/>
-        <Class IRI="#ISO21972Thing"/>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="#Application_area"/>
         <Class IRI="#ISO21972Thing"/>
     </SubClassOf>
@@ -706,18 +647,15 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#Feature"/>
+        <Class abbreviatedIRI="gis:Polygon"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Feature"/>
         <Class IRI="#ISO21972Thing"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#Feature"/>
         <Class IRI="http://www.w3.org/2003/01/geo/wgs84_pos#Feature"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#Feature"/>
-        <ObjectExactCardinality cardinality="1">
-            <ObjectProperty IRI="#hasGeometry"/>
-            <Class IRI="#Geometry"/>
-        </ObjectExactCardinality>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#Fixed_point"/>
@@ -746,17 +684,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         </DataHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#Geometry"/>
-        <Class abbreviatedIRI="gis:Geometry"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#Geometry"/>
-        <DataExactCardinality cardinality="1">
-            <DataProperty abbreviatedIRI="gis:asWKT"/>
-            <Datatype abbreviatedIRI="xsd:string"/>
-        </DataExactCardinality>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="#Indicator"/>
         <Class IRI="#ISO21972Thing"/>
     </SubClassOf>
@@ -775,7 +702,7 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         <Class IRI="#Indicator"/>
         <ObjectExactCardinality cardinality="1">
             <ObjectProperty IRI="#for_time_interval"/>
-            <Class abbreviatedIRI="time:DateTimeInterval"/>
+            <Class abbreviatedIRI="otime:DateTimeInterval"/>
         </ObjectExactCardinality>
     </SubClassOf>
     <SubClassOf>
@@ -799,6 +726,20 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#Measure"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#hasUnit"/>
+            <Class IRI="#Unit_of_measure"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Measure"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#unit_of_measure"/>
+            <Class IRI="#Unit_of_measure"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Measure"/>
         <ObjectExactCardinality cardinality="1">
             <ObjectProperty IRI="#hasUnit"/>
             <Class IRI="#Unit_of_measure"/>
@@ -810,6 +751,20 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
             <ObjectProperty IRI="#unit_of_measure"/>
             <Class IRI="#Unit_of_measure"/>
         </ObjectExactCardinality>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Measure"/>
+        <DataAllValuesFrom>
+            <DataProperty IRI="#hasNumericalValue"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Measure"/>
+        <DataAllValuesFrom>
+            <DataProperty IRI="#numerical_value"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataAllValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#Measure"/>
@@ -923,7 +878,7 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         <Class IRI="#Population"/>
         <ObjectAllValuesFrom>
             <ObjectProperty IRI="#for_time_interval"/>
-            <Class abbreviatedIRI="time:DateTimeInterval"/>
+            <Class abbreviatedIRI="otime:DateTimeInterval"/>
         </ObjectAllValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -957,15 +912,37 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#Quantity"/>
-        <ObjectExactCardinality cardinality="1">
-            <ObjectProperty IRI="#commonlyHasUnit"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#hasUnit"/>
             <Class IRI="#Unit_of_measure"/>
-        </ObjectExactCardinality>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Quantity"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#hasValue"/>
+            <Class IRI="#Measure"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Quantity"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#unit_of_measure"/>
+            <Class IRI="#Unit_of_measure"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Quantity"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#value"/>
+            <Class IRI="#Measure"/>
+        </ObjectAllValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#Quantity"/>
         <ObjectExactCardinality cardinality="1">
-            <ObjectProperty IRI="#hasPhenomenon"/>
+            <ObjectProperty IRI="#hasUnit"/>
+            <Class IRI="#Unit_of_measure"/>
         </ObjectExactCardinality>
     </SubClassOf>
     <SubClassOf>
@@ -1120,10 +1097,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#System_of_units"/>
-        <Class IRI="#ISO21972Thing"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#Unit"/>
         <Class IRI="#ISO21972Thing"/>
     </SubClassOf>
     <SubClassOf>
@@ -1635,10 +1608,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#integer">2</Literal>
     </DataPropertyAssertion>
     <SubObjectPropertyOf>
-        <ObjectProperty abbreviatedIRI="gis:hasGeometry"/>
-        <ObjectProperty IRI="#iso21972ObjectProperty"/>
-    </SubObjectPropertyOf>
-    <SubObjectPropertyOf>
         <ObjectProperty IRI="#base"/>
         <ObjectProperty IRI="#iso21972ObjectProperty"/>
     </SubObjectPropertyOf>
@@ -1653,10 +1622,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     <SubObjectPropertyOf>
         <ObjectProperty IRI="#cardinality_of"/>
         <ObjectProperty IRI="#description_of"/>
-    </SubObjectPropertyOf>
-    <SubObjectPropertyOf>
-        <ObjectProperty IRI="#commonlyHasUnit"/>
-        <ObjectProperty IRI="#iso21972ObjectProperty"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
         <ObjectProperty IRI="#defined_by"/>
@@ -1692,34 +1657,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
         <ObjectProperty IRI="#for_time_interval"/>
-        <ObjectProperty IRI="#iso21972ObjectProperty"/>
-    </SubObjectPropertyOf>
-    <SubObjectPropertyOf>
-        <ObjectProperty IRI="#hasBase"/>
-        <ObjectProperty IRI="#iso21972ObjectProperty"/>
-    </SubObjectPropertyOf>
-    <SubObjectPropertyOf>
-        <ObjectProperty IRI="#hasDenominator"/>
-        <ObjectProperty IRI="#iso21972ObjectProperty"/>
-    </SubObjectPropertyOf>
-    <SubObjectPropertyOf>
-        <ObjectProperty IRI="#hasGeometry"/>
-        <ObjectProperty abbreviatedIRI="gis:hasGeometry"/>
-    </SubObjectPropertyOf>
-    <SubObjectPropertyOf>
-        <ObjectProperty IRI="#hasNumerator"/>
-        <ObjectProperty IRI="#iso21972ObjectProperty"/>
-    </SubObjectPropertyOf>
-    <SubObjectPropertyOf>
-        <ObjectProperty IRI="#hasPhenomenon"/>
-        <ObjectProperty IRI="#iso21972ObjectProperty"/>
-    </SubObjectPropertyOf>
-    <SubObjectPropertyOf>
-        <ObjectProperty IRI="#hasTerm1"/>
-        <ObjectProperty IRI="#iso21972ObjectProperty"/>
-    </SubObjectPropertyOf>
-    <SubObjectPropertyOf>
-        <ObjectProperty IRI="#hasTerm2"/>
         <ObjectProperty IRI="#iso21972ObjectProperty"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
@@ -1834,31 +1771,10 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         <ObjectProperty IRI="#base"/>
     </FunctionalObjectProperty>
     <FunctionalObjectProperty>
-        <ObjectProperty IRI="#commonlyHasUnit"/>
+        <ObjectProperty IRI="#denominator"/>
     </FunctionalObjectProperty>
     <FunctionalObjectProperty>
-        <ObjectProperty IRI="#hasBase"/>
-    </FunctionalObjectProperty>
-    <FunctionalObjectProperty>
-        <ObjectProperty IRI="#hasDenominator"/>
-    </FunctionalObjectProperty>
-    <FunctionalObjectProperty>
-        <ObjectProperty IRI="#hasGeometry"/>
-    </FunctionalObjectProperty>
-    <FunctionalObjectProperty>
-        <ObjectProperty IRI="#hasPhenomenon"/>
-    </FunctionalObjectProperty>
-    <FunctionalObjectProperty>
-        <ObjectProperty IRI="#hasTerm1"/>
-    </FunctionalObjectProperty>
-    <FunctionalObjectProperty>
-        <ObjectProperty IRI="#hasTerm2"/>
-    </FunctionalObjectProperty>
-    <FunctionalObjectProperty>
-        <ObjectProperty IRI="#hasUnit"/>
-    </FunctionalObjectProperty>
-    <FunctionalObjectProperty>
-        <ObjectProperty IRI="#hasValue"/>
+        <ObjectProperty IRI="#numerator"/>
     </FunctionalObjectProperty>
     <FunctionalObjectProperty>
         <ObjectProperty IRI="#phenomenon"/>
@@ -1874,6 +1790,9 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     </FunctionalObjectProperty>
     <FunctionalObjectProperty>
         <ObjectProperty IRI="#term_2"/>
+    </FunctionalObjectProperty>
+    <FunctionalObjectProperty>
+        <ObjectProperty IRI="#unit_of_measure"/>
     </FunctionalObjectProperty>
     <FunctionalObjectProperty>
         <ObjectProperty IRI="#value"/>
@@ -1893,10 +1812,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     <ObjectPropertyDomain>
         <ObjectProperty IRI="#cardinality_of"/>
         <Class IRI="#Cardinality"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyDomain>
-        <ObjectProperty IRI="#denominator"/>
-        <Class IRI="#Unit_division"/>
     </ObjectPropertyDomain>
     <ObjectPropertyDomain>
         <ObjectProperty IRI="#derived_quantity"/>
@@ -1939,10 +1854,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
             <Class IRI="#Point"/>
             <Class IRI="#Quantity"/>
         </ObjectUnionOf>
-    </ObjectPropertyDomain>
-    <ObjectPropertyDomain>
-        <ObjectProperty IRI="#numerator"/>
-        <Class IRI="#Unit_division"/>
     </ObjectPropertyDomain>
     <ObjectPropertyDomain>
         <ObjectProperty IRI="#parameter_of_var"/>
@@ -2005,10 +1916,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         <Class IRI="#Population"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#denominator"/>
-        <Class IRI="#Unit_of_measure"/>
-    </ObjectPropertyRange>
-    <ObjectPropertyRange>
         <ObjectProperty IRI="#derived_quantity"/>
         <Class IRI="#Quantity"/>
     </ObjectPropertyRange>
@@ -2042,10 +1949,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     <ObjectPropertyRange>
         <ObjectProperty IRI="#measurement_scale"/>
         <Class IRI="#Measurement_scale"/>
-    </ObjectPropertyRange>
-    <ObjectPropertyRange>
-        <ObjectProperty IRI="#numerator"/>
-        <Class IRI="#Unit_of_measure"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
         <ObjectProperty IRI="#parameter_of_var"/>
@@ -2084,40 +1987,33 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         <Class IRI="#Measure"/>
     </ObjectPropertyRange>
     <SubDataPropertyOf>
-        <DataProperty abbreviatedIRI="gis:asWKT"/>
-        <DataProperty IRI="#i72DataProperty"/>
-    </SubDataPropertyOf>
-    <SubDataPropertyOf>
         <DataProperty IRI="#exponent"/>
-        <DataProperty IRI="#i72DataProperty"/>
+        <DataProperty IRI="#iso21972DataProperties"/>
     </SubDataPropertyOf>
     <SubDataPropertyOf>
         <DataProperty IRI="#factor"/>
-        <DataProperty IRI="#i72DataProperty"/>
+        <DataProperty IRI="#iso21972DataProperties"/>
     </SubDataPropertyOf>
     <SubDataPropertyOf>
         <DataProperty IRI="#hasNumericalValue"/>
-        <DataProperty IRI="#i72DataProperty"/>
+        <DataProperty IRI="#iso21972DataProperties"/>
     </SubDataPropertyOf>
     <SubDataPropertyOf>
         <DataProperty IRI="#has_Name"/>
-        <DataProperty IRI="#i72DataProperty"/>
+        <DataProperty IRI="#iso21972DataProperties"/>
     </SubDataPropertyOf>
     <SubDataPropertyOf>
         <DataProperty IRI="#numerical_value"/>
-        <DataProperty IRI="#i72DataProperty"/>
+        <DataProperty IRI="#iso21972DataProperties"/>
     </SubDataPropertyOf>
     <SubDataPropertyOf>
         <DataProperty IRI="#rank"/>
-        <DataProperty IRI="#i72DataProperty"/>
+        <DataProperty IRI="#iso21972DataProperties"/>
     </SubDataPropertyOf>
     <SubDataPropertyOf>
         <DataProperty IRI="#symbol"/>
-        <DataProperty IRI="#i72DataProperty"/>
+        <DataProperty IRI="#iso21972DataProperties"/>
     </SubDataPropertyOf>
-    <FunctionalDataProperty>
-        <DataProperty abbreviatedIRI="gis:asWKT"/>
-    </FunctionalDataProperty>
     <FunctionalDataProperty>
         <DataProperty IRI="#exponent"/>
     </FunctionalDataProperty>
@@ -2125,10 +2021,13 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
         <DataProperty IRI="#factor"/>
     </FunctionalDataProperty>
     <FunctionalDataProperty>
-        <DataProperty IRI="#hasNumericalValue"/>
+        <DataProperty IRI="#numerical_value"/>
     </FunctionalDataProperty>
     <FunctionalDataProperty>
         <DataProperty IRI="#rank"/>
+    </FunctionalDataProperty>
+    <FunctionalDataProperty>
+        <DataProperty IRI="#symbol"/>
     </FunctionalDataProperty>
     <DataPropertyDomain>
         <DataProperty IRI="#exponent"/>
@@ -2155,10 +2054,6 @@ Pattuelli, M.C., (2003), “The GovStat Ontology: Technical Report”. The GovSt
     </DataPropertyRange>
     <DataPropertyRange>
         <DataProperty IRI="#factor"/>
-        <Datatype abbreviatedIRI="xsd:decimal"/>
-    </DataPropertyRange>
-    <DataPropertyRange>
-        <DataProperty IRI="#numerical_value"/>
         <Datatype abbreviatedIRI="xsd:decimal"/>
     </DataPropertyRange>
     <DataPropertyRange>
@@ -2416,14 +2311,9 @@ parameter links back to the using cardinality_of. parameter links back using the
         <Literal xml:lang="en">has base unit</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#commonlyHasUnit</IRI>
-        <Literal xml:lang="en">replaces unit_of_measure</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>#denominator</IRI>
-        <Literal xml:lang="en">denominatot</Literal>
+        <Literal xml:lang="en">denominator</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty IRI="http://www.wurvoc.org/vocabularies/om-1.8/alternative_label"/>
@@ -2459,36 +2349,6 @@ parameter links back to the using cardinality_of. parameter links back using the
         <AnnotationProperty IRI="http://www.wurvoc.org/vocabularies/om-1.8/alternative_label"/>
         <IRI>#factor</IRI>
         <Literal xml:lang="en">has factor</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#hasNumericalValue</IRI>
-        <Literal>Replaces property: numerical_value</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#hasPhenomenon</IRI>
-        <Literal xml:lang="en">replace property: phenomenon</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#hasTerm1</IRI>
-        <Literal>replaces property: term_1</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#hasTerm2</IRI>
-        <Literal>replaces property: term_2</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#hasUnit</IRI>
-        <Literal>replaces property:unit_of_measure</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#hasValue</IRI>
-        <Literal>replaces property: value</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>

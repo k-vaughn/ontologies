@@ -1,0 +1,27 @@
+# =====================================================
+# ReqView Annotations
+# =====================================================
+
+@prefix : <{{docProperty "namespace"}}> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix its-core: <https://w3id.org/itsdata/core/v1/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+		
+:ReqView a owl:Ontology;
+    # Ontology metadata
+    dcterms:title                  "ReqView annotations for the {{docName}} ontology.";
+    skos:definition                "This ontology defines the identifiers used by ReqView to manage traceability and use of ontology concepts within ITS.";
+    dcterms:license                "http://creativecommons.org/licenses/by/4.0/";
+    dcterms:modified               "{{formatDateTime format="yyyy-MM-ddTHH:mm:ss"}}"^^xsd:dateTime .
+
+
+{{#eachDocumentObject}}
+{{#if (and qname type)}}
+# {{heading}}
+:{{qname}} a owl:{{type}} ;
+    its-core:reqviewId "{{docObjId}}" .
+
+{{/if}}
+{{/eachDocumentObject}}
